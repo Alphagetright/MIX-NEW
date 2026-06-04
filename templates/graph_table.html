@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+{% block title %}溯源数据查询 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_graph %}active{% endblock %}
+{% block nav_graph_open %}open{% endblock %}
+{% block nav_graph_sub %}open{% endblock %}
+{% block breadcrumb %}<span>数据图谱</span> · 溯源数据查询{% endblock %}
+
+{% block head_extra %}
+<style>
+  .filter-bar {
+    display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    background: #fff; padding: 16px; border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-input, .filter-select {
+    padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; transition: 0.25s;
+  }
+  .filter-input:focus, .filter-select:focus {
+    border-color: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.35);
+  }
+  .filter-input { flex: 1; min-width: 200px; }
+  .table-wrapper { max-height: 520px; overflow: auto; border: 1px solid #eee; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+  th, td { border: 1px solid #eee; padding: 10px 12px; text-align: left; vertical-align: middle; word-wrap: break-word; line-height: 1.5; }
+  th { background: #fafafa; position: sticky; top: 0; z-index: 5; font-weight: 600; }
+  tbody tr.data-row:hover { background-color: #eaf4fc; }
+  .tag { background: #ecf0f1; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #555; display: inline-block; }
+  .pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+  .pager button { padding: 8px 14px; border-radius: 8px; border: 1px solid #dce4ec; background: #fff; cursor: pointer; transition: 0.2s; }
+  .pager button:hover:not(:disabled) { border-color: #3498db; color: #3498db; }
+  .pager button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ops-cell { white-space: nowrap; }
+  .ops-cell .btn-link { background: none; border: none; padding: 0 8px; cursor: pointer; font-size: 14px; color: #3498db; font-weight: 600; }
+  .ops-cell .btn-link:hover { text-decoration: underline; }
+  .danger { color: #e74c3c; }
+  .recycle-btn { background: #e67e22; color: #fff; padding: 10px 18px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; transition: 0.25s; box-shadow: 0 4px 10px rgba(230,126,34,0.25); }
+  .recycle-btn:hover { filter: brightness(1.05); transform: translateY(-2px); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 950; backdrop-filter: blur(3px); }
+  .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; width: min(1000px, 92vw); max-height: 82vh; border-radius: 12px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow-y: auto; }
+  .close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: #999; }
+  .close-btn:hover { color: #e74c3c; }
+
+  /* Drawer */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+  .drawer-overlay.show { opacity: 1; visibility: visible; }
+  .analyze-drawer { position: fixed; top: 0; right: 0; width: 420px; max-width: 100vw; height: 100vh; background: #fff; z-index: 1001; box-shadow: -4px 0 20px rgba(0,0,0,0.1); transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+  .analyze-drawer.open { transform: translateX(0); }
+  .drawer-resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; z-index: 1005; background: transparent; transition: background 0.2s; }
+  .drawer-resizer:hover, .drawer-resizer.active { background: rgba(52,152,219,0.4); }
+  .analyze-drawer.no-transition { transition: none !important; }
+  .drawer-head { flex-shrink: 0; padding: 16px 44px 14px 18px; border-bottom: 1px solid #eee; position: relative; }
+  .drawer-close { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #999; border-radius: 8px; }
+  .drawer-close:hover { color: #e74c3c; background: #f5f5f5; }
+  .drawer-title-row { font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 8px; }
+  .drawer-title-row .hl { color: #3498db; }
+  .drawer-meta { font-size: 13px; color: #666; margin-bottom: 6px; }
+  .drawer-line { font-family: KaiTi, serif; font-size: 15px; line-height: 1.55; color: #333; }
+  .drawer-tags { flex-shrink: 0; padding: 10px 14px; border-bottom: 1px solid #eee; background: #fafbfc; max-height: 120px; overflow-y: auto; }
+  .tag-chip { display: inline-block; padding: 3px 10px; border-radius: 20px; background: #eaf4fd; color: #3498db; font-size: 12px; margin: 3px; }
+  .drawer-chat-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 16px; min-height: 0; }
+  .msg-row { display: flex; margin-bottom: 12px; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.assistant { justify-content: flex-start; }
+  .msg-bubble { max-width: 92%; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.65; word-break: break-word; }
+  .msg-bubble.user { background: #3498db; color: #fff; border-bottom-right-radius: 4px; }
+  .msg-bubble.assistant { background: #ecf0f1; color: #333; border-bottom-left-radius: 4px; }
+  .drawer-md { font-size: 14px; line-height: 1.65; }
+  .drawer-md h1, .drawer-md h2, .drawer-md h3 { margin: 0.6em 0 0.35em; font-size: 1.05em; }
+  .drawer-md p { margin: 0.45em 0; }
+  .drawer-md ul, .drawer-md ol { margin: 0.4em 0; padding-left: 1.2em; }
+  .drawer-foot { flex-shrink: 0; padding: 12px 14px; border-top: 1px solid #eee; background: #fafafa; display: flex; gap: 10px; align-items: center; }
+  .drawer-foot input { flex: 1; padding: 11px 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 14px; }
+  .drawer-foot input:focus { border-color: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.35); }
+  .drawer-foot button { padding: 11px 18px; border-radius: 8px; border: none; background: #3498db; color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .drawer-foot button:hover { filter: brightness(1.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <a href="/graph" class="btn-action" style="text-decoration:none;">← 返回统计图表</a>
+    <span style="color:#999; font-size:13px;">意象溯源数据查询</span>
+  </div>
+  <button class="recycle-btn" onclick="openRecycle()">回收站 (<span id="recycle-count">0</span>)</button>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">意象溯源数据表 <span id="record-count" style="font-size:13px;color:#999;font-weight:400;"></span></h2>
+    <button class="btn-action" style="background:#e74c3c;color:#fff;display:none;" id="resetBtn" onclick="resetFilters()">清除筛选</button>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="searchTxt" class="filter-input" placeholder="搜索意象文本（如：山、月）..." onkeyup="applyFilters()">
+    <select id="filterCat" class="filter-select" onchange="applyFilters()"><option value="">所有分类域</option></select>
+    <select id="filterGenre" class="filter-select" onchange="applyFilters()"><option value="">所有体裁/标签</option></select>
+    <select id="filterEmotion" class="filter-select" onchange="applyFilters()"><option value="">所有情感倾向</option></select>
+  </div>
+  <div style="margin-bottom:10px;">
+    <button type="button" onclick="togglePoemSearch()" style="background:none;border:1px solid #ddd;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px;color:#666;">
+      ▸ 诗歌搜索
+    </button>
+  </div>
+  <div id="poemSearchPanel" class="filter-bar" style="display:none;margin-top:-8px;">
+    <input type="text" id="searchPoemId" class="filter-input" placeholder="诗歌编号（如：D0001、P0004）..." onkeyup="applyFilters()" style="min-width:160px;flex:0.4;">
+    <input type="text" id="searchPoemTitle" class="filter-input" placeholder="诗歌标题关键词（如：望岳、兵车行）..." onkeyup="applyFilters()" style="min-width:180px;flex:0.6;">
+  </div>
+  <div class="table-wrapper">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th style="width:9%;">诗歌编号</th><th style="width:11%;">意象文本</th>
+          <th style="width:20%;">所属诗歌</th><th style="width:14%;">体裁/标签</th>
+          <th style="width:18%;">大类归属</th><th style="width:12%;">情感倾向</th>
+          <th style="width:14%;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="traceback-body"></tbody>
+    </table>
+  </div>
+  <div class="pager">
+    <span id="page-info"></span>
+    <button type="button" id="page-prev" onclick="changePage(-1)">上一页</button>
+    <button type="button" id="page-next" onclick="changePage(1)">下一页</button>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('detailModal')">&times;</button>
+    <div id="md-content"></div>
+  </div>
+</div>
+
+<!-- Analyze Drawer -->
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeAnalyzeDrawer()"></div>
+<aside id="analyze-drawer" class="analyze-drawer" aria-hidden="true">
+  <div id="drawer-resizer" class="drawer-resizer"></div>
+  <div class="drawer-head">
+    <button class="drawer-close" onclick="closeAnalyzeDrawer()" aria-label="关闭">&times;</button>
+    <div class="drawer-title-row">意象：<span class="hl" id="drawer-img-text">—</span></div>
+    <div class="drawer-meta" id="drawer-poem-meta">《》</div>
+    <div class="drawer-line" id="drawer-line-text">诗句：—</div>
+  </div>
+  <div class="drawer-tags" id="drawer-tags"></div>
+  <div class="drawer-chat-scroll" id="drawer-chat-scroll">
+    <div id="drawer-messages"></div>
+  </div>
+  <div class="drawer-foot">
+    <input type="text" id="drawer-followup" placeholder="输入追问…" onkeydown="if(event.key==='Enter'){sendDrawerFollowup();}">
+    <button type="button" onclick="sendDrawerFollowup()">发送</button>
+  </div>
+</aside>
+
+<!-- Recycle Modal -->
+<div class="modal-overlay" id="recycleModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('recycleModal')">&times;</button>
+    <h2 style="color:#e67e22;margin-top:0;border-bottom:2px solid #eee;padding-bottom:12px;">已删除意象回收站</h2>
+    <div class="table-wrapper" style="flex:1;max-height:62vh;">
+      <table>
+        <thead><tr><th style="width:12%;">编号</th><th style="width:15%;">被删意象</th><th style="width:25%;">所属诗歌</th><th style="width:28%;">大类</th><th style="width:18%;">操作</th></tr></thead>
+        <tbody id="recycle-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var PAGE_SIZE = 25;
+var RENDER_LIMIT = 5000;
+var ALL_DATA = [];
+var DELETED_DATA = [];
+var filteredView = [];
+var currentPage = 1;
+
+var DEFAULT_ANALYZE_PROMPT = '请从认知诗学角度深度解析这个意象在诗歌中的多维功能';
+var ANALYZE_CACHE = {};
+var currentCacheKey = null;
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function makeCacheKey(item) {
+  if (!item) return '';
+  return String(item.poem_id || '') + '_' + String(item.txt || item['文本'] || '');
+}
+
+function isCacheAnalysisComplete(ent) {
+  if (!ent) return false;
+  if (ent.done === true) return true;
+  return Array.isArray(ent.messages) && ent.messages.length >= 2;
+}
+
+function itemApiPayload(row) {
+  if (!row) return {};
+  var o = JSON.parse(JSON.stringify(row));
+  delete o._uid; return o;
+}
+
+function getItemPayloadByUid(uid) {
+  var tr = document.querySelector('tr.data-row[data-uid="' + uid + '"]');
+  try {
+    var raw = tr && tr.getAttribute('data-item');
+    if (raw) return JSON.parse(decodeURIComponent(raw));
+  } catch(e) {}
+  return itemApiPayload(ALL_DATA.find(function(i){return i._uid === uid;}));
+}
+
+async function loadData() {
+  var res = await fetch('/api/data');
+  var data = await res.json();
+  ALL_DATA = data.traceback || [];
+  ALL_DATA.forEach(function(item, index){
+    item._uid = 'img_' + index + '_' + Math.random().toString(36).substr(2,5);
+  });
+  populateSelects();
+  refreshAll();
+}
+
+function populateSelects() {
+  var cats = [...new Set(ALL_DATA.map(function(item){return item.cat;}))].filter(Boolean);
+  var genres = [...new Set(ALL_DATA.map(function(item){return item.genre;}))].filter(Boolean);
+  var emotions = [...new Set(ALL_DATA.map(function(item){return item.emo_cat;}))].filter(Boolean);
+  ['filterCat','filterGenre','filterEmotion'].forEach(function(id){
+    var sel = document.getElementById(id);
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">' + (id==='filterCat'?'所有分类域':id==='filterGenre'?'所有体裁/标签':'所有情感倾向') + '</option>';
+    (id==='filterCat'?cats:id==='filterGenre'?genres:emotions).forEach(function(v){ sel.add(new Option(v,v)); });
+    sel.value = cur;
+  });
+}
+
+function togglePoemSearch() {
+  var p = document.getElementById('poemSearchPanel');
+  var b = event.currentTarget;
+  if (p.style.display === 'none') {
+    p.style.display = 'flex'; b.textContent = '▾ 诗歌搜索';
+  } else {
+    p.style.display = 'none'; b.textContent = '▸ 诗歌搜索';
+    document.getElementById('searchPoemId').value = '';
+    document.getElementById('searchPoemTitle').value = '';
+    applyFilters();
+  }
+}
+
+function getFiltered() {
+  var t = document.getElementById('searchTxt').value.toLowerCase();
+  var c = document.getElementById('filterCat').value;
+  var g = document.getElementById('filterGenre').value;
+  var e = document.getElementById('filterEmotion').value;
+  var pid = document.getElementById('searchPoemId').value.toLowerCase().trim();
+  var pt = document.getElementById('searchPoemTitle').value.toLowerCase();
+  return ALL_DATA.filter(function(item){
+    var txt = (item.txt || item['文本'] || '').toLowerCase();
+    var match = true;
+    if (pid) {
+      var itemId = (item.poem_id || '').toLowerCase();
+      match = match && itemId.includes(pid);
+    }
+    if (pt) {
+      var title = (item.title || '').toLowerCase();
+      match = match && title.includes(pt);
+    }
+    return match && txt.includes(t) && (c==='' || item.cat===c) && (g==='' || item.genre===g) && (e==='' || item.emo_cat===e);
+  });
+}
+
+function renderTablePage() {
+  var arr = filteredView.slice(0, RENDER_LIMIT);
+  var total = arr.length;
+  var pages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  if (currentPage > pages) currentPage = pages;
+  var start = (currentPage-1)*PAGE_SIZE;
+  var slice = arr.slice(start, start+PAGE_SIZE);
+  var html = '';
+  slice.forEach(function(item){
+    var pl = itemApiPayload(item);
+    var enc = encodeURIComponent(JSON.stringify(pl));
+    var uid = item._uid;
+    html += '<tr class="data-row" data-uid="'+uid+'" data-item="'+enc+'">'+
+      '<td>'+escapeHtml(item.poem_id)+'</td>'+
+      '<td style="color:#2980b9;font-weight:bold;">'+escapeHtml(item.txt||item['文本'])+'</td>'+
+      '<td><b>'+escapeHtml(item.title)+'</b></td>'+
+      '<td><span class="tag">'+escapeHtml(item.genre)+'</span></td>'+
+      '<td>'+escapeHtml(item.cat)+'</td>'+
+      '<td>'+escapeHtml(item.emotion)+'</td>'+
+      '<td class="ops-cell">'+
+        '<button class="btn-link" onclick="openDetailModal(\''+uid+'\',event)">详情</button>'+
+        '<button class="btn-link" onclick="openAnalyzeDrawer(\''+uid+'\',event)">解析</button>'+
+        '<a href="javascript:void(0)" class="danger" onclick="event.stopPropagation();deleteItem(\''+uid+'\')">删除</a>'+
+      '</td></tr>';
+  });
+  if (total > RENDER_LIMIT) html += '<tr><td colspan="7" style="text-align:center;color:#e74c3c;background:#fff3f3;">仅渲染前 '+RENDER_LIMIT+' 条结果，请缩小筛选范围。</td></tr>';
+  document.getElementById('traceback-body').innerHTML = html || '<tr><td colspan="7" style="text-align:center;color:#999;">暂无数据</td></tr>';
+  document.getElementById('record-count').innerText = '(共命中 '+total+' 条 · 第 '+currentPage+'/'+pages+' 页)';
+  document.getElementById('page-info').innerText = '每页 '+PAGE_SIZE+' 条';
+  document.getElementById('page-prev').disabled = currentPage <= 1;
+  document.getElementById('page-next').disabled = currentPage >= pages;
+  document.getElementById('recycle-count').innerText = DELETED_DATA.length;
+}
+
+function openDetailModal(uid, ev) {
+  if (ev) ev.stopPropagation();
+  var item = ALL_DATA.find(function(i){return i._uid===uid;});
+  if (!item) return;
+  var w = item['文本']||item.txt||'';
+  document.getElementById('md-content').innerHTML =
+    '<h2 style="color:#2c3e50;margin-top:0;border-bottom:2px solid #eee;padding-bottom:12px;">《'+escapeHtml(item.title)+'》 — 意象详情</h2>'+
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">意象文本</b><span style="color:#e74c3c;font-weight:bold;">'+escapeHtml(w)+'</span></div>'+
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">大类归属</b><span>'+escapeHtml(item.cat)+'</span></div>'+
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;display:block;margin-bottom:8px;">结构化标注</b>'+
+      '<div style="font-size:13px;line-height:1.7;color:#344;">'+
+        '词性 '+escapeHtml(String(item['词性']||''))+' · 成分 '+escapeHtml(String(item['成分类型']||''))+'<br>'+
+        '感知 '+escapeHtml(String(item['感知通道']||''))+' · 素材 '+escapeHtml(String(item['素材类型']||''))+'<br>'+
+        '内部结构 '+escapeHtml(String(item['内部结构']||''))+' · 指涉 '+escapeHtml(String(item['指涉来源']||''))+'<br>'+
+        '表现功能 '+escapeHtml(String(item['表现功能']||''))+' · 结构组 '+escapeHtml(String(item['结构功能组']||''))+'<br>'+
+        '文化流通 '+escapeHtml(String(item['文化流通性']||''))+' · 跨文化性 '+escapeHtml(String(item['跨文化性']||''))+'<br>'+
+        '认知强度 '+escapeHtml(String(item['认知强度']||''))+' · 核心意象 '+escapeHtml(String(item['核心意象']||''))+'<br>'+
+        '情感极性 '+escapeHtml(String(item['情感极性']||''))+' · 类别 '+escapeHtml(String(item['情感类别']||''))+' · 置信度 '+escapeHtml(String(item['情感置信度']||''))+'<br>'+
+        '大类编码 '+escapeHtml(String(item['大类编码']||''))+' · 子类 '+escapeHtml(String(item['子类编码']||''))+
+      '</div></div>'+
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">四层摘要</b><span style="color:#16a085;">'+escapeHtml(item.dimensions)+'</span></div>'+
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">情感倾向</b><span style="color:#e67e22;">'+escapeHtml(item.emotion)+'</span></div>'+
+    '<div><b style="color:#7f8c8d;display:block;margin-bottom:8px;">完整诗句</b>'+
+      '<div style="background:#f8f9fa;padding:14px;border-radius:8px;font-family:KaiTi,serif;font-size:17px;line-height:1.65;">'+escapeHtml(item.line)+'</div></div>';
+  document.getElementById('detailModal').style.display = 'block';
+}
+
+function mdToHtml(text) {
+  if (!text) return '';
+  if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+    try { return marked.parse(text, { breaks: true }); }
+    catch(e) { return '<p>'+escapeHtml(text)+'</p>'; }
+  }
+  return '<p>'+escapeHtml(text)+'</p>';
+}
+
+function buildTagChips(item) {
+  var chips = [];
+  var pc = item['感知通道']; if (pc) chips.push(String(pc));
+  var cat = item.cat || '';
+  var sc = cat.includes('-') ? cat.split('-').pop().trim() : cat;
+  if (sc) chips.push(sc);
+  var fx = item['表现功能']; if (fx) chips.push(String(fx));
+  var cs = item['认知强度']; if (cs!=='' && cs!=null) chips.push('认知强度'+cs);
+  var emo = item['情感类别']||item.emo_cat||'';
+  var pol = item['情感极性'];
+  var ec = '';
+  if (emo && pol!=='' && pol!=null) ec = String(emo)+String(pol);
+  else if (emo) ec = String(emo);
+  else if (pol!=='' && pol!=null) ec = String(pol);
+  if (ec) chips.push(ec);
+  return chips.filter(Boolean);
+}
+
+function fillDrawerChrome(item) {
+  document.getElementById('drawer-img-text').textContent = item['文本']||item.txt||'—';
+  document.getElementById('drawer-poem-meta').textContent = ('《'+(item.title||'')+'》 '+(item.genre||'')).trim();
+  document.getElementById('drawer-line-text').textContent = '诗句：'+(item.line||'—');
+  var chips = buildTagChips(item);
+  document.getElementById('drawer-tags').innerHTML = chips.map(function(c){return '<span class="tag-chip">'+escapeHtml(c)+'</span>';}).join('');
+}
+
+function scrollDrawerToBottom() {
+  var el = document.getElementById('drawer-chat-scroll');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function openAnalyzeDrawer(uid, ev) {
+  if (ev) ev.stopPropagation();
+  var item = getItemPayloadByUid(uid);
+  var cacheKey = makeCacheKey(item);
+  currentCacheKey = cacheKey;
+  fillDrawerChrome(item);
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('analyze-drawer').classList.add('open');
+  document.getElementById('analyze-drawer').setAttribute('aria-hidden','false');
+
+  var ent = ANALYZE_CACHE[cacheKey];
+  if (!ent) {
+    ent = {item:JSON.parse(JSON.stringify(item)), messages:[], rendered:'', done:false, isStreaming:false, abortController:null};
+    ANALYZE_CACHE[cacheKey] = ent;
+  }
+  if (ent.isStreaming) {
+    document.getElementById('drawer-messages').innerHTML = ent.rendered || '';
+    scrollDrawerToBottom(); return;
+  }
+  if (isCacheAnalysisComplete(ent)) {
+    ent.done = true;
+    document.getElementById('drawer-messages').innerHTML = ent.rendered || '';
+    scrollDrawerToBottom(); return;
+  }
+  ent.messages = []; ent.rendered = ''; ent.done = false;
+  document.getElementById('drawer-messages').innerHTML = '';
+  document.getElementById('drawer-followup').value = '';
+  runDrawerStream(cacheKey, item, ent);
+}
+
+async function runDrawerStream(cacheKey, item, ent) {
+  ent.isStreaming = true;
+  ent.abortController = new AbortController();
+  var bid = 'b-' + Math.random().toString(36).substr(2,9);
+  var acc = '';
+  var uhl = '<div class="msg-row user"><div class="msg-bubble user">'+escapeHtml(DEFAULT_ANALYZE_PROMPT)+'</div></div>';
+  var ahl = '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="'+bid+'">...</div></div>';
+  ent.rendered = uhl + ahl;
+  if (currentCacheKey === cacheKey) document.getElementById('drawer-messages').innerHTML = ent.rendered;
+  try {
+    var res = await fetch('/api/analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({item:item,history:[],followup:DEFAULT_ANALYZE_PROMPT}),
+      signal:ent.abortController.signal
+    });
+    await readSSE(res, function(obj){
+      if (obj.type==='chunk' && obj.text) acc += obj.text;
+      else if (obj.type==='error') acc += '\n\n【错误】'+(obj.message||'');
+      ent.rendered = uhl + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="'+bid+'">'+mdToHtml(acc)+'</div></div>';
+      if (currentCacheKey===cacheKey){ var b=document.getElementById(bid); if(b)b.innerHTML=mdToHtml(acc); scrollDrawerToBottom(); }
+    }, {signal:ent.abortController.signal});
+    if (!ent.abortController.signal.aborted) {
+      ent.messages.push({role:'user',content:DEFAULT_ANALYZE_PROMPT},{role:'assistant',content:acc});
+      ent.done = true;
+    }
+  } catch(e) {
+    if (e.name!=='AbortError') {
+      acc += '\n\n<p class="danger">请求失败：'+escapeHtml(String(e))+'</p>';
+      if (currentCacheKey===cacheKey){ var b=document.getElementById(bid); if(b)b.innerHTML=mdToHtml(acc); }
+    }
+  } finally { ent.isStreaming = false; ent.abortController = null; scrollDrawerToBottom(); }
+}
+
+async function sendDrawerFollowup() {
+  var cacheKey = currentCacheKey;
+  if (!cacheKey) return;
+  var ent = ANALYZE_CACHE[cacheKey];
+  if (!ent||!ent.messages.length||ent.isStreaming) return;
+  var inp = document.getElementById('drawer-followup');
+  var q = (inp.value||'').trim();
+  if (!q) return; inp.value = '';
+  var hist = JSON.parse(JSON.stringify(ent.messages));
+  var item = ent.item||{};
+  ent.isStreaming = true; ent.abortController = new AbortController();
+  var bid = 'b-'+Math.random().toString(36).substr(2,9);
+  var acc = '';
+  var nq = '<div class="msg-row user"><div class="msg-bubble user">'+escapeHtml(q)+'</div></div>';
+  var na = '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="'+bid+'">...</div></div>';
+  var base = ent.rendered;
+  ent.rendered = base + nq + na;
+  if (currentCacheKey===cacheKey){ document.getElementById('drawer-messages').insertAdjacentHTML('beforeend',nq+na); scrollDrawerToBottom(); }
+  try {
+    var res = await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({item:item,history:hist,followup:q}),
+      signal:ent.abortController.signal
+    });
+    await readSSE(res, function(obj){
+      if (obj.type==='chunk'&&obj.text) acc += obj.text;
+      else if (obj.type==='error') acc += '\n\n【错误】'+(obj.message||'');
+      ent.rendered = base + nq + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="'+bid+'">'+mdToHtml(acc)+'</div></div>';
+      if (currentCacheKey===cacheKey){ var b=document.getElementById(bid); if(b)b.innerHTML=mdToHtml(acc); scrollDrawerToBottom(); }
+    }, {signal:ent.abortController.signal});
+    if (!ent.abortController.signal.aborted) {
+      ent.messages.push({role:'user',content:q},{role:'assistant',content:acc});
+    }
+  } catch(e) {
+    if (e.name!=='AbortError') {
+      acc += '\n\n<p class="danger">请求失败：'+escapeHtml(String(e))+'</p>';
+      if (currentCacheKey===cacheKey){ var b=document.getElementById(bid); if(b)b.innerHTML=mdToHtml(acc); }
+    }
+  } finally { ent.isStreaming = false; ent.abortController = null; scrollDrawerToBottom(); }
+}
+
+function closeAnalyzeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('analyze-drawer').classList.remove('open');
+  document.getElementById('analyze-drawer').setAttribute('aria-hidden','true');
+  currentCacheKey = null;
+}
+
+function changePage(delta) {
+  var arr = filteredView.slice(0,RENDER_LIMIT);
+  var pages = Math.max(1,Math.ceil(arr.length/PAGE_SIZE));
+  currentPage = Math.min(pages, Math.max(1, currentPage+delta));
+  renderTablePage();
+}
+
+function applyFilters() {
+  filteredView = getFiltered(); currentPage = 1;
+  var f = !!(document.getElementById('searchTxt').value||document.getElementById('filterCat').value||document.getElementById('filterGenre').value||document.getElementById('filterEmotion').value);
+  document.getElementById('resetBtn').style.display = f?'inline-flex':'none';
+  renderTablePage();
+}
+
+function resetFilters() {
+  document.getElementById('searchTxt').value='';
+  document.getElementById('filterCat').value='';
+  document.getElementById('filterGenre').value='';
+  document.getElementById('filterEmotion').value='';
+  document.getElementById('searchPoemId').value='';
+  document.getElementById('searchPoemTitle').value='';
+  applyFilters();
+}
+
+function refreshAll() {
+  filteredView = getFiltered();
+  renderTablePage();
+}
+
+function deleteItem(uid) {
+  var idx = ALL_DATA.findIndex(function(item){return item._uid===uid;});
+  if (idx===-1) return;
+  var t = ALL_DATA.splice(idx,1)[0];
+  DELETED_DATA.push(t);
+  var ck = makeCacheKey(t);
+  if (ck && ANALYZE_CACHE[ck]) {
+    if (ANALYZE_CACHE[ck].isStreaming && ANALYZE_CACHE[ck].abortController) ANALYZE_CACHE[ck].abortController.abort();
+    delete ANALYZE_CACHE[ck];
+  }
+  if (currentCacheKey===ck) closeAnalyzeDrawer();
+  refreshAll();
+}
+
+function restoreItem(uid) {
+  var idx = DELETED_DATA.findIndex(function(item){return item._uid===uid;});
+  if (idx===-1) return;
+  ALL_DATA.push(DELETED_DATA.splice(idx,1)[0]);
+  refreshAll();
+  renderRecycleBin();
+}
+
+function renderRecycleBin() {
+  var tbody = document.getElementById('recycle-body');
+  if (!DELETED_DATA.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#999;">回收站为空</td></tr>'; return; }
+  tbody.innerHTML = DELETED_DATA.map(function(item){
+    return '<tr><td>'+escapeHtml(item.poem_id)+'</td>'+
+      '<td style="color:#e74c3c;font-weight:bold;text-decoration:line-through;">'+escapeHtml(item.txt)+'</td>'+
+      '<td>'+escapeHtml(item.title)+'</td><td>'+escapeHtml(item.cat)+'</td>'+
+      '<td><button class="btn-action" style="background:#2ecc71;color:#fff;padding:6px 10px;font-size:12px;" onclick="restoreItem(\''+item._uid+'\')">恢复</button></td></tr>';
+  }).join('');
+}
+
+function openRecycle() { renderRecycleBin(); document.getElementById('recycleModal').style.display='block'; }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+async function readSSE(response, onJson, opts) {
+  var signal = opts&&opts.signal;
+  if (signal&&signal.aborted) return;
+  var reader = response.body.getReader();
+  var dec = new TextDecoder();
+  var buf = '';
+  while (true) {
+    if (signal&&signal.aborted){ try{await reader.cancel();}catch(e){} break; }
+    var rr;
+    try { rr = await reader.read(); } catch(err) { if(signal&&signal.aborted) break; throw err; }
+    var value=rr.value, done=rr.done;
+    if (done) break;
+    buf += dec.decode(value, {stream:true});
+    var parts = buf.split('\n\n');
+    buf = parts.pop() || '';
+    parts.forEach(function(block){
+      block.split('\n').forEach(function(line){
+        if (line.startsWith('data: ')) { try { onJson(JSON.parse(line.slice(6))); } catch(e){} }
+      });
+    });
+  }
+}
+
+// Drawer resize
+(function(){
+  var drw = document.getElementById('analyze-drawer');
+  var rez = document.getElementById('drawer-resizer');
+  var resizing = false;
+  rez.addEventListener('mousedown', function(e){
+    resizing = true; rez.classList.add('active');
+    drw.classList.add('no-transition');
+    document.body.style.cursor='ew-resize'; document.body.style.userSelect='none';
+  });
+  document.addEventListener('mousemove', function(e){
+    if (!resizing) return;
+    var w = window.innerWidth - e.clientX;
+    if (w<320) w=320; if (w>window.innerWidth-80) w=window.innerWidth-80;
+    drw.style.width = w+'px';
+  });
+  document.addEventListener('mouseup', function(){
+    if (resizing){ resizing=false; rez.classList.remove('active'); drw.classList.remove('no-transition'); document.body.style.cursor=''; document.body.style.userSelect=''; }
+  });
+})();
+
+loadData();
+</script>
+{% endblock %}

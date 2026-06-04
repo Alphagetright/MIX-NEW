@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}语料浏览 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<h1>语料浏览</h1>
+<p class="subtitle">按作者、朝代、诗体浏览和检索诗歌语料</p>
+
+<section class="card">
+    <div class="form-row" style="gap: 12px; align-items: end;">
+        <div style="flex:1">
+            <label style="font-weight:600;font-size:14px">关键词检索</label>
+            <input type="text" id="search-input" placeholder="输入标题、作者或诗句关键词" style="width:100%">
+        </div>
+        <div style="flex:1">
+            <label style="font-weight:600;font-size:14px">朝代筛选</label>
+            <select id="filter-dynasty" style="width:100%">
+                <option value="">全部</option>
+            </select>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="doSearch()">检索</button>
+        </div>
+    </div>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h3>语料统计</h3>
+    <div id="corpus-stats" class="stat-row">加载中...</div>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h3>检索结果</h3>
+    <div class="table-wrap" style="max-height:500px;overflow-y:auto">
+        <table class="data-table" id="corpus-table">
+            <thead>
+                <tr><th>编号</th><th>标题</th><th>作者</th><th>朝代</th><th>诗体</th><th>原文（前60字）</th></tr>
+            </thead>
+            <tbody id="corpus-body">
+                <tr><td colspan="6" class="empty-cell">请上传诗歌数据后浏览</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="corpus-pagination" style="margin-top:8px"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='corpus.js') }}"></script>
+{% endblock %}

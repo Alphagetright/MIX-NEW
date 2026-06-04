@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - CLI运维管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', '宋体', sans-serif; background: #0d1117; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: #161b22; border-radius: 12px; padding: 40px; width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid #30363d; }
+        .login-box h1 { font-size: 22px; color: #e6edf3; text-align: center; margin-bottom: 6px; }
+        .login-box .subtitle { font-size: 13px; color: #8b949e; text-align: center; margin-bottom: 30px; }
+        .login-box .subtitle .highlight { color: #58a6ff; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; color: #c9d1d9; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 10px 14px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #e6edf3; font-size: 14px; outline: none; transition: border 0.2s; }
+        .form-group input:focus { border-color: #58a6ff; }
+        .btn-login { width: 100%; padding: 10px; background: #238636; color: #fff; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; transition: background 0.2s; }
+        .btn-login:hover { background: #2ea043; }
+        .error { background: #3d1114; color: #f85149; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 18px; text-align: center; border: 1px solid #3d1114; }
+        .register-link { text-align: center; margin-top: 18px; font-size: 13px; color: #8b949e; }
+        .register-link a { color: #58a6ff; text-decoration: none; }
+        .register-link a:hover { text-decoration: underline; }
+        .badge { text-align: center; margin-top: 20px; font-size: 11px; color: #484f58; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>CLI 运维管理</h1>
+        <div class="subtitle"><span class="highlight">AGENT</span> 可操控的命令行运维系统</div>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="输入用户名" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="输入密码" required>
+            </div>
+            <button type="submit" class="btn-login">登 录</button>
+        </form>
+        <div class="register-link">
+            还没有账号？<a href="{{ url_for('register') }}">立即注册</a>
+        </div>
+        <div class="badge">设计理念：CLI → AGENT 可直接操控 · 远程 hook · AI 提效</div>
+    </div>
+</body>
+</html>

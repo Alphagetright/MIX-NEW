@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Claude
+.claude/
+
+# Sensitive files (API keys, tokens)
+*_token*
+*.key
+settings.local.json
+
+# Data runtime directories
+cache/
+logs/
+exports/
+reports/
+backups/
+rag_db/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Screenshots and temp
+screenshots/
+temp_docx_unpack/
+
+# Test artifacts
+.cli_ops_history
+test_*.py
+!test_agent.py

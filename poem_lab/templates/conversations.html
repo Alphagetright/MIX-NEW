@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}对话历史 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<h1>对话历史</h1>
+<p class="subtitle">查看每次 LLM 标注请求的完整对话记录（系统提示词 + 用户输入 + AI 响应）</p>
+
+<section class="card" style="margin-top:16px">
+    <div class="form-row" style="gap:12px; align-items:end;">
+        <div style="flex:1">
+            <input type="text" id="conv-search" placeholder="搜索标题/作者/诗歌编号..." style="width:100%">
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="searchConversations()">搜索</button>
+        </div>
+    </div>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0">记录列表 <span style="font-size:12px;color:#888;" id="conv-count"></span></h3>
+        <span class="hint" style="font-size:12px">显示最近 50 条</span>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;">
+        <table class="data-table" id="conv-table">
+            <thead>
+                <tr><th>ID</th><th>诗歌编号</th><th>标题</th><th>作者</th><th>模型</th><th>Token</th><th>时间</th><th>操作</th></tr>
+            </thead>
+            <tbody id="conv-body">
+                <tr><td colspan="8" class="empty-cell">加载中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="conv-pagination" style="margin-top:8px"></div>
+</section>
+
+<!-- Detail Modal -->
+<div class="modal-mask" id="conv-modal" style="display:none" onclick="if(event.target===this)closeConvModal()">
+    <div class="modal-box" style="max-width:800px; max-height:90vh; overflow-y:auto;">
+        <div class="modal-header">
+            <h3 id="conv-modal-title">对话详情</h3>
+            <button class="btn-close" onclick="closeConvModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="card" style="margin-bottom:12px">
+                <h4>System Prompt</h4>
+                <pre class="report-pre" style="max-height:200px" id="conv-system"></pre>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+                <h4>User Prompt</h4>
+                <pre class="report-pre" style="max-height:150px" id="conv-user"></pre>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+                <h4>AI 原始响应</h4>
+                <pre class="report-pre" style="max-height:250px" id="conv-raw"></pre>
+            </div>
+            <div class="card">
+                <h4>解析结果（JSON）</h4>
+                <pre class="report-json" id="conv-parsed"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 0;
+
+function loadConversations(search) {
+    let url = '/api/conversations?limit=50&offset=' + (currentPage * 50);
+    if (search) url += '&q=' + encodeURIComponent(search);
+
+    fetch(url).then(r => r.json()).then(d => {
+        document.getElementById('conv-count').textContent = '(共 ' + (d.total || 0) + ' 条)';
+        const tbody = document.getElementById('conv-body');
+        if (!d.ok || !d.conversations || d.conversations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-cell">暂无对话记录</td></tr>';
+            return;
+        }
+        tbody.innerHTML = d.conversations.map(c =>
+            '<tr><td>' + c.id + '</td>' +
+            '<td>' + (c.poem_no || '') + '</td>' +
+            '<td>' + (c.poem_title || '') + '</td>' +
+            '<td>' + (c.poem_author || '') + '</td>' +
+            '<td style="font-size:12px">' + (c.model_name || '-') + '</td>' +
+            '<td>' + (c.tokens_used || '-') + '</td>' +
+            '<td style="font-size:12px">' + (c.created_at || '') + '</td>' +
+            '<td><button class="btn btn-sm" onclick="viewConversation(' + c.id + ')">查看</button></td></tr>'
+        ).join('');
+
+        // Pagination
+        const pagDiv = document.getElementById('conv-pagination');
+        if (d.total > 50) {
+            const totalPages = Math.ceil(d.total / 50);
+            pagDiv.innerHTML = '<span style="font-size:13px;color:#888">第 ' + (currentPage+1) + ' 页 / 共 ' + totalPages + ' 页</span> ' +
+                (currentPage > 0 ? '<button class="btn btn-sm" onclick="currentPage--;loadConversations()">上一页</button> ' : '') +
+                (currentPage < totalPages-1 ? '<button class="btn btn-sm" onclick="currentPage++;loadConversations()">下一页</button>' : '');
+        } else {
+            pagDiv.innerHTML = '';
+        }
+    });
+}
+
+function searchConversations() {
+    currentPage = 0;
+    loadConversations(document.getElementById('conv-search').value.trim());
+}
+
+function viewConversation(id) {
+    fetch('/api/conversations/' + id).then(r => r.json()).then(d => {
+        if (!d.ok) { alert('加载失败'); return; }
+        const c = d.conversation;
+        document.getElementById('conv-modal-title').textContent = '对话详情 #' + c.id + ' — ' + (c.poem_title || '');
+        document.getElementById('conv-system').textContent = c.system_prompt || '';
+        document.getElementById('conv-user').textContent = c.user_prompt || '';
+        document.getElementById('conv-raw').textContent = c.raw_response || '';
+        document.getElementById('conv-parsed').textContent = c.parsed_result ? JSON.stringify(c.parsed_result, null, 2) : '';
+        document.getElementById('conv-modal').style.display = '';
+    });
+}
+
+function closeConvModal() {
+    document.getElementById('conv-modal').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => loadConversations());
+</script>
+{% endblock %}

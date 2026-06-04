@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}首页 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block breadcrumb %}<span>首页</span> · 系统概览{% endblock %}
+
+{% block content %}
+<div class="stats-row" id="dashboard-stats">
+  <div class="stat-card c1">
+    <div class="num" id="stat-poems">—</div>
+    <div class="lbl">净解析诗歌（首）</div>
+  </div>
+  <div class="stat-card c2">
+    <div class="num" id="stat-images">—</div>
+    <div class="lbl">提取真意象（条）</div>
+  </div>
+  <div class="stat-card c3">
+    <div class="num">11</div>
+    <div class="lbl">意象分类维度</div>
+  </div>
+  <div class="stat-card c4">
+    <div class="num">25</div>
+    <div class="lbl">已知诗人</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2 class="card-title">系统概览</h2></div>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
+    <div>
+      <h3 style="font-size:15px; color:#2c3e50; margin-bottom:14px;">核心能力</h3>
+      <ul style="padding-left:20px; line-height:2; color:#555; font-size:14px;">
+        <li>意象数据管理：313首唐诗 · 4,896条意象结构化存储</li>
+        <li>多维度统计分析：支持15个维度的聚合统计与可视化</li>
+        <li>RAG智能问答：基于向量检索 + 大语言模型的诗歌知识问答</li>
+        <li>认知诗学解析：AI多维度深度意象分析（感知/文化/情感/结构/跨诗比较）</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-size:15px; color:#2c3e50; margin-bottom:14px;">技术架构</h3>
+      <ul style="padding-left:20px; line-height:2; color:#555; font-size:14px;">
+        <li>后端：Python Flask 3.0+ (B/S架构)</li>
+        <li>前端：原生 HTML/CSS/JS + ECharts 5.5</li>
+        <li>向量数据库：ChromaDB（余弦相似度检索）</li>
+        <li>大模型：兼容OpenAI API格式（SSE流式响应）</li>
+        <li>数据格式：结构化JSON标注数据</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h3 style="font-size:15px; color:#2c3e50; margin-bottom:14px;">快速入口</h3>
+  <div class="quick-links">
+    <a href="/graph" class="quick-link">
+      <span class="icon-lg">📊</span>
+      <h3>数据图谱</h3>
+      <p>意象统计图表 · 溯源数据查询 · 可视化分析</p>
+    </a>
+    <a href="/ai" class="quick-link">
+      <span class="icon-lg">🤖</span>
+      <h3>AI 智能问答</h3>
+      <p>诗歌知识检索 · 流式生成回答 · 多轮对话</p>
+    </a>
+    <a href="/admin" class="quick-link">
+      <span class="icon-lg">⚙️</span>
+      <h3>管理后台</h3>
+      <p>系统状态监控 · 数据导出 · 缓存管理</p>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadStats() {
+  try {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+    document.getElementById('stat-poems').textContent = data.total_poems || 0;
+    document.getElementById('stat-images').textContent = data.total_images || 0;
+  } catch(e) {
+    document.getElementById('stat-poems').textContent = '—';
+    document.getElementById('stat-images').textContent = '—';
+  }
+}
+loadStats();
+</script>
+{% endblock %}

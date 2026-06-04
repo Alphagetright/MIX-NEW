@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tang-cli-ops"
+version = "1.0.0"
+description = "唐诗意象数据运维管理系统 — CLI Operations Toolkit"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "唐诗意象数据分析团队"}
+]
+
+[project.scripts]
+tang-cli = "cli_ops.cli_main:main"
+
+[tool.setuptools]
+packages = ["cli_ops", "cli_ops.web"]

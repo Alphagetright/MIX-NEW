@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}注册 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 60px auto;">
+    <h1 style="text-align:center; font-size: 22px;">注册账号</h1>
+    <p style="text-align:center; color: var(--text-secondary); margin-bottom: 24px;">创建一个新的标注员账号</p>
+
+    <div class="card" style="padding: 24px;">
+        <div id="reg-error" style="color: #b33a3a; font-size: 13px; margin-bottom: 12px; display: none;"></div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">用户名</label>
+            <input type="text" id="reg-username" placeholder="至少2个字符" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius: var(--radius); font-size:14px; font-family:inherit;" autocomplete="username">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">密码</label>
+            <input type="password" id="reg-password" placeholder="至少4个字符" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius: var(--radius); font-size:14px; font-family:inherit;" autocomplete="new-password">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">确认密码</label>
+            <input type="password" id="reg-password2" placeholder="再次输入密码" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius: var(--radius); font-size:14px; font-family:inherit;" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+        </div>
+
+        <button class="btn btn-primary" onclick="doRegister()" style="width:100%; padding:10px; font-size:15px;">注 册</button>
+
+        <p style="text-align:center; margin-top: 16px; font-size: 13px; color: var(--text-secondary);">
+            已有账号？<a href="/login" style="color: var(--accent);">登录</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function doRegister() {
+    const username = document.getElementById('reg-username').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const password2 = document.getElementById('reg-password2').value;
+    const errEl = document.getElementById('reg-error');
+
+    if (!username || !password) {
+        errEl.textContent = '请填写所有字段';
+        errEl.style.display = '';
+        return;
+    }
+    if (password !== password2) {
+        errEl.textContent = '两次输入的密码不一致';
+        errEl.style.display = '';
+        return;
+    }
+
+    fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password})
+    }).then(r => r.json()).then(d => {
+        if (d.ok) {
+            window.location.href = '/login?registered=1';
+        } else {
+            errEl.textContent = d.error || '注册失败';
+            errEl.style.display = '';
+        }
+    });
+}
+</script>
+{% endblock %}

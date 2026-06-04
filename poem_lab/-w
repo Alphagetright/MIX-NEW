@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标注工作台 — 古典诗歌文本结构化标注生产系统</title>
+    <link rel="stylesheet" href="/static/style.css">
+    
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="/" class="nav-brand">古典诗歌标注系统</a>
+        <div class="nav-links">
+            <a href="/">标注工作台</a>
+            <a href="/history">导出历史</a>
+            <button class="btn btn-sm btn-icon" id="btn-settings" title="LLM 连接设置" onclick="openSettings()">⚙</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+<h1>标注工作台</h1>
+<p class="subtitle">五步流水线：上传数据 → 设计表头 → AI 生成方案 → 审核试跑 → 批量产出</p>
+
+<!-- ═══ 步骤1: 上传诗歌 ═══ -->
+<section class="wizard-step" id="step-upload">
+    <div class="step-header">
+        <span class="step-num">1</span>
+        <h2>上传诗歌数据</h2>
+        <span class="step-status" id="status-upload"></span>
+    </div>
+    <div class="step-body">
+        <div class="tab-bar">
+            <button class="tab active" onclick="switchUploadTab('file')">上传文件</button>
+            <button class="tab" onclick="switchUploadTab('paste')">粘贴文本</button>
+        </div>
+        <div id="tab-file" class="tab-content">
+            <div class="drop-zone" id="drop-zone">
+                <p>拖拽 .txt 文件到此处，或点击选择</p>
+                <input type="file" id="file-input" accept=".txt" hidden>
+            </div>
+        </div>
+        <div id="tab-paste" class="tab-content" style="display:none">
+            <textarea id="paste-area" rows="10" placeholder="编号：P001&#10;标题：静夜思&#10;作者：李白&#10;原文：&#10;床前明月光，疑是地上霜。&#10;举头望明月，低头思故乡。"></textarea>
+        </div>
+        <p class="hint">支持格式：编号/标题/作者/原文 标签分隔，或《标题》作者+原文</p>
+        <button class="btn btn-primary" id="btn-upload" onclick="uploadPoems()">解析诗歌</button>
+        <div id="upload-result" class="step-result"></div>
+    </div>
+</section>
+
+<!-- ═══ 步骤2: 设计表头 ═══ -->
+<section class="wizard-step" id="step-headers" style="display:none">
+    <div class="step-header">
+        <span class="step-num">2</span>
+        <h2>设计标注表头</h2>
+        <span class="step-status" id="status-headers"></span>
+    </div>
+    <div class="step-body">
+        <!-- 手动定义 -->
+        <div class="card">
+            <h3>手动定义</h3>
+            <div class="table-wrap">
+                <table class="data-table" id="headers-table">
+                    <thead><tr><th style="width:40px">序</th><th>列名</th><th>说明</th><th style="width:80px">操作</th></tr></thead>
+                    <tbody id="headers-tbody"></tbody>
+                </table>
+            </div>
+            <div class="form-row" style="margin-top:8px">
+                <input type="text" id="new-header-name" placeholder="列名（如：意象类型）" style="flex:1">
+                <input type="text" id="new-header-desc" placeholder="说明" style="flex:2">
+                <button class="btn" onclick="addHeader()">添加列</button>
+            </div>
+        </div>
+        <!-- AI 推导 -->
+        <div class="card">
+            <h3>或让 AI 根据需求描述自动推导</h3>
+            <textarea id="requirement-text" rows="3" placeholder="例如：分析李白诗歌中的自然意象、情感倾向、修辞手法"></textarea>
+            <button class="btn" id="btn-parse" onclick="parseRequirement()" style="margin-top:8px">AI 解析需求</button>
+            <div id="parse-result" style="display:none;margin-top:12px"></div>
+        </div>
+        <!-- 模板 -->
+        <div class="form-row" style="margin-top:8px">
+            <select id="template-select" onchange="loadTemplate(this.value)" style="width:auto;flex:1">
+                <option value="">-- 加载模板 --</option>
+            </select>
+            <input type="text" id="template-name" placeholder="模板名称" style="flex:1">
+            <button class="btn" onclick="saveAsTemplate()">保存模板</button>
+        </div>
+        <button class="btn btn-primary btn-lg" id="btn-design" onclick="triggerDesign()" disabled>AI 生成标注方案</button>
+        <div id="design-status" class="step-result"></div>
+    </div>
+</section>
+
+<!-- ═══ 步骤3: 审核方案 ═══ -->
+<section class="wizard-step" id="step-review" style="display:none">
+    <div class="step-header">
+        <span class="step-num">3</span>
+        <h2>审核标注方案</h2>
+        <span class="step-status" id="status-review"></span>
+    </div>
+    <div class="step-body">
+        <div class="card">
+            <h3>AI 生成的标注提示词 <span class="hint">（可编辑）</span></h3>
+            <textarea id="generated-prompt" rows="14" style="font-family:Consolas,monospace;font-size:13px"></textarea>
+        </div>
+        <div class="card">
+            <h3>列映射</h3>
+            <div class="table-wrap">
+                <table class="data-table" id="mapping-table">
+                    <thead><tr><th>表头</th><th>字段名</th><th>分析维度</th><th>数据类型</th><th>枚举值</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <h3>示例数据 & 方案说明</h3>
+            <pre id="sample-row" style="background:#faf7ef;padding:10px;border-radius:4px;font-size:13px"></pre>
+            <p class="hint"><strong>方案说明：</strong><span id="analysis-notes"></span> &nbsp; <strong>预估Token/首：</strong><span id="est-tokens"></span></p>
+            <div id="sample-validation"></div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-quality" onclick="runQualityCheck()">试跑质量检查（前5首）</button>
+            <button class="btn btn-primary btn-lg" id="btn-confirm" onclick="confirmAndGo()" style="display:none">确认方案，开始批量运行</button>
+        </div>
+        <div id="quality-result" class="step-result"></div>
+    </div>
+</section>
+
+<!-- ═══ 步骤4: 批量运行 ═══ -->
+<section class="wizard-step" id="step-run" style="display:none">
+    <div class="step-header">
+        <span class="step-num">4</span>
+        <h2>批量运行</h2>
+        <span class="step-status" id="status-run"></span>
+    </div>
+    <div class="step-body">
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p id="progress-text">等待开始...</p>
+        <p id="progress-detail" class="hint"></p>
+        <div id="current-poem" class="current-poem"></div>
+        <button class="btn btn-primary btn-lg" id="btn-start" onclick="startBatch()">开始批量运行</button>
+        <div id="batch-result" class="step-result" style="margin-top:12px">
+            <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+                <table class="data-table" id="results-table">
+                    <thead><tr><th>编号</th><th>标题</th><th>作者</th><th>状态</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="export-links" style="margin-top:12px"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ 步骤5: 导出 ═══ -->
+<section class="wizard-step" id="step-export" style="display:none">
+    <div class="step-header">
+        <span class="step-num">5</span>
+        <h2>导出结果 <span class="step-done">✅</span></h2>
+    </div>
+    <div class="step-body">
+        <div id="final-export-links"></div>
+        <p style="margin-top:12px"><a href="/history" class="btn">查看全部导出历史</a></p>
+    </div>
+</section>
+
+    </main>
+
+    <!-- LLM 设置弹窗 -->
+    <div class="modal-overlay" id="settings-modal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>LLM 连接设置</h2>
+                <button class="btn-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <label>API 地址</label>
+                    <input type="text" id="cfg-api-url" placeholder="http://127.0.0.1:44787/v1/chat/completions">
+                </div>
+                <div class="form-row">
+                    <label>模型名称</label>
+                    <input type="text" id="cfg-model" placeholder="留空自动检测">
+                </div>
+                <div class="form-row">
+                    <label>试跑首数</label>
+                    <input type="number" id="cfg-test-count" value="5" min="1" max="20">
+                </div>
+                <p class="hint">修改后即时生效，无需重启</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeSettings()">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" style="display:none"></div>
+    
+<script src="/static/wizard.js"></script>
+<script>
+// 初始加载模板列表
+fetch('/api/list-templates').then(r => r.json()).then(d => {
+    if (d.ok) { const sel = document.getElementById('template-select');
+        d.templates.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); }); }
+});
+</script>
+
+    <script>
+    function toast(msg, ok = true) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+        el.style.display = 'block';
+        clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function openSettings() {
+        const stored = JSON.parse(localStorage.getItem('poemlab_settings') || '{}');
+        document.getElementById('cfg-api-url').value = stored.api_url || 'http://127.0.0.1:44787/v1/chat/completions';
+        document.getElementById('cfg-model').value = stored.model || '';
+        document.getElementById('cfg-test-count').value = stored.test_count || 5;
+        document.getElementById('settings-modal').style.display = 'flex';
+    }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+    function saveSettings() {
+        const s = {
+            api_url: document.getElementById('cfg-api-url').value.trim(),
+            model: document.getElementById('cfg-model').value.trim(),
+            test_count: parseInt(document.getElementById('cfg-test-count').value) || 5
+        };
+        localStorage.setItem('poemlab_settings', JSON.stringify(s));
+        closeSettings();
+        toast('设置已保存');
+    }
+    function getSettings() {
+        return JSON.parse(localStorage.getItem('poemlab_settings') || '{}');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}数据看板 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<h1>数据看板</h1>
+<p class="subtitle">标注结果概览、历史批处理统计与质量分析</p>
+
+<section class="dashboard-grid">
+    <div class="card stat-card">
+        <h3>会话统计</h3>
+        <div class="stat-row"><span class="stat-label">总会话数</span><span class="stat-value" id="stat-sessions">-</span></div>
+        <div class="stat-row"><span class="stat-label">总诗歌数</span><span class="stat-value" id="stat-poems">-</span></div>
+        <div class="stat-row"><span class="stat-label">总批处理数</span><span class="stat-value" id="stat-batches">-</span></div>
+    </div>
+
+    <div class="card stat-card">
+        <h3>标注质量</h3>
+        <div class="stat-row"><span class="stat-label">平均完成率</span><span class="stat-value" id="stat-completion">-</span></div>
+        <div class="stat-row"><span class="stat-label">平均成功率</span><span class="stat-value" id="stat-success">-</span></div>
+        <div class="stat-row"><span class="stat-label">整体评分</span><span class="stat-value" id="stat-quality">-</span></div>
+    </div>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h3>最近批处理记录</h3>
+    <div class="table-wrap">
+        <table class="data-table" id="batch-history-table">
+            <thead>
+                <tr><th>批次ID</th><th>启动时间</th><th>总数</th><th>完成</th><th>失败</th><th>成功率</th><th>状态</th><th>导出</th></tr>
+            </thead>
+            <tbody id="batch-history-body">
+                <tr><td colspan="8" class="empty-cell">加载中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h3>导出文件</h3>
+    <div id="export-list">加载中...</div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+{% endblock %}

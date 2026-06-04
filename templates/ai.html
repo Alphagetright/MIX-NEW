@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}AI问答 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_ai %}active{% endblock %}
+{% block breadcrumb %}<span>AI 智能问答</span> · 基于RAG的诗歌知识检索{% endblock %}
+
+{% block head_extra %}
+<style>
+  .ai-hero { max-width: 720px; margin: 0 auto 28px; text-align: center; }
+  .ai-hero input {
+    width: 100%; padding: 16px 20px; font-size: 17px;
+    border-radius: 12px; border: 1px solid #ddd; outline: none; transition: 0.25s;
+  }
+  .ai-hero input:focus { border-color: #3498db; box-shadow: 0 0 12px rgba(52,152,219,0.35); }
+  .ai-hero button {
+    margin-top: 14px; padding: 12px 32px; border-radius: 10px; border: none;
+    background: #3498db; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s;
+  }
+  .ai-hero button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+  .ai-split { display: none; grid-template-columns: 40% 60%; gap: 20px; align-items: stretch; min-height: 60vh; }
+  .ai-split.active { display: grid; }
+  @media (max-width: 900px) { .ai-split.active { grid-template-columns: 1fr; } }
+  .poem-col { overflow: auto; max-height: calc(100vh - 220px); }
+  .poem-card {
+    background: #fff; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0;
+  }
+  .poem-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .poem-card h4 { margin: 0 0 6px; color: #2c3e50; font-size: 15px; }
+  .poem-card .sub { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .poem-card .body { font-family: KaiTi, serif; font-size: 15px; line-height: 1.65; color: #333; }
+  .poem-card .sim { margin-top: 8px; font-size: 12px; color: #2ecc71; font-weight: 700; }
+  .poem-detail { display: none; margin-top: 10px; font-size: 13px; color: #555; white-space: pre-wrap; }
+  .poem-card.expanded .poem-detail { display: block; }
+  .ai-answer {
+    background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; min-height: 420px; border: 1px solid #f0f0f0;
+  }
+  .ai-answer-scroll { flex: 1; overflow: auto; padding-bottom: 12px; white-space: pre-wrap; line-height: 1.75; font-size: 15px; }
+  .ai-foot { margin-top: 10px; border-top: 1px solid #eee; padding-top: 12px; display: flex; gap: 10px; }
+  .ai-foot input { flex: 1; padding: 12px 14px; border-radius: 8px; border: 1px solid #ddd; outline: none; }
+  .ai-foot input:focus { border-color: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.35); }
+  .ai-foot button { padding: 12px 18px; border-radius: 8px; border: none; background: #2c3e50; color: #fff; font-weight: 600; cursor: pointer; }
+  .warn-text { color: #e67e22; font-size: 13px; margin-top: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-hero">
+  <input type="text" id="rag-question" placeholder="输入关于唐诗的问题，例如：杜甫写过哪些关于秋天的诗？" onkeydown="if(event.key==='Enter'){runRagFirst();}">
+  <div><button type="button" onclick="runRagFirst()">检索并生成回答</button></div>
+  <p class="warn-text" id="rag-hint" style="display:none;"></p>
+</div>
+<div id="ai-split" class="ai-split">
+  <div class="poem-col" id="rag-poems"></div>
+  <div class="ai-answer">
+    <div class="ai-answer-scroll" id="rag-answer"></div>
+    <div class="ai-foot">
+      <input type="text" id="rag-followup" placeholder="多轮追问..." onkeydown="if(event.key==='Enter'){runRagFollowup();}">
+      <button type="button" onclick="runRagFollowup()">发送</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var ragPoems = [];
+var ragConv = [];
+var ragBusy = false;
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function readSSE(response, onJson, opts) {
+  const signal = opts && opts.signal;
+  if (signal && signal.aborted) return;
+  const reader = response.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  while (true) {
+    if (signal && signal.aborted) { try { await reader.cancel(); } catch(e){} break; }
+    let readResult;
+    try { readResult = await reader.read(); } catch(err) { if (signal && signal.aborted) break; throw err; }
+    const { value, done } = readResult;
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const parts = buf.split('\n\n');
+    buf = parts.pop() || '';
+    for (const block of parts) {
+      const lines = block.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try { onJson(JSON.parse(line.slice(6))); } catch(e){}
+        }
+      }
+    }
+  }
+}
+
+async function runRagFirst() {
+  const q = (document.getElementById('rag-question').value || '').trim();
+  const hint = document.getElementById('rag-hint');
+  hint.style.display = 'none';
+  if (!q || ragBusy) return;
+  ragBusy = true; ragConv = [];
+  document.getElementById('rag-answer').innerText = '';
+  document.getElementById('rag-poems').innerHTML = '';
+  document.getElementById('ai-split').classList.add('active');
+  let ans = '';
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, history: [] })
+    });
+    await readSSE(res, function(obj) {
+      if (obj.type === 'poems') {
+        ragPoems = obj.poems || [];
+        var box = document.getElementById('rag-poems');
+        if (!ragPoems.length) { box.innerHTML = '<p style="color:#999;">暂无检索结果</p>'; return; }
+        box.innerHTML = ragPoems.map(function(p) {
+          return '<div class="poem-card" onclick="this.classList.toggle(\'expanded\')">' +
+            '<h4>《' + escapeHtml(p['标题']) + '》 ' + escapeHtml(p['作者']) + '</h4>' +
+            '<div class="sub">相似度：' + p['相似度'] + '</div>' +
+            '<div class="body">' + escapeHtml((p['原文'] || '').slice(0, 120)) + ((p['原文']||'').length>120?'…':'') + '</div>' +
+            '<div class="poem-detail">' + escapeHtml(p['原文'] || '') + '</div>' +
+            '<div class="sim">点击卡片展开全文</div></div>';
+        }).join('');
+      } else if (obj.type === 'chunk' && obj.text) {
+        ans += obj.text;
+        document.getElementById('rag-answer').innerText = ans;
+        document.getElementById('rag-answer').scrollTop = document.getElementById('rag-answer').scrollHeight;
+      } else if (obj.type === 'error') {
+        hint.innerText = obj.message || '出错'; hint.style.display = 'block';
+      }
+    });
+    if (ans) ragConv = [{ role: 'user', content: q }, { role: 'assistant', content: ans }];
+  } catch (e) {
+    hint.innerText = '请求失败：' + e; hint.style.display = 'block';
+  } finally { ragBusy = false; }
+}
+
+async function runRagFollowup() {
+  const q = (document.getElementById('rag-followup').value || '').trim();
+  const firstQ = document.getElementById('rag-question').value.trim();
+  if (!q || ragBusy || !firstQ || !ragConv.length) return;
+  ragBusy = true;
+  document.getElementById('rag-followup').value = '';
+  const ansEl = document.getElementById('rag-answer');
+  ansEl.innerText += '\n\n【问】' + q + '\n\n【答】';
+  let acc = '';
+  const markPos = ansEl.innerText.length;
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, history: ragConv.map(function(m){ return { role: m.role, content: m.content }; }) })
+    });
+    await readSSE(res, function(obj) {
+      if (obj.type === 'chunk' && obj.text) {
+        acc += obj.text;
+        ansEl.innerText = ansEl.innerText.slice(0, markPos) + acc;
+        ansEl.scrollTop = ansEl.scrollHeight;
+      } else if (obj.type === 'error') {
+        ansEl.innerText += '\n【错误】' + (obj.message || '');
+      }
+    });
+    ragConv.push({ role: 'user', content: q }, { role: 'assistant', content: acc });
+  } catch (e) { ansEl.innerText += '\n请求失败：' + e; }
+  finally { ragBusy = false; }
+}
+</script>
+{% endblock %}

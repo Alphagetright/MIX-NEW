@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}意象统计图表 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_graph %}active{% endblock %}
+{% block nav_graph_open %}open{% endblock %}
+{% block nav_graph_sub %}open{% endblock %}
+{% block breadcrumb %}<span>数据图谱</span> · 意象统计图表{% endblock %}
+
+{% block head_extra %}
+<style>
+  .chart-container { height: 460px; width: 100%; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+  .stats-bar-wrap { text-align: center; margin-bottom: 28px; }
+  .stats-bar {
+    display: inline-flex; flex-wrap: wrap; gap: 28px;
+    justify-content: center; background: #fff;
+    padding: 18px 36px; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-item { font-size: 15px; font-weight: 600; color: #555; }
+  .stat-num { color: #3498db; font-size: 22px; margin-left: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-bar-wrap">
+  <div class="stats-bar">
+    <div class="stat-item">净解析诗歌：<span id="stat-poems" class="stat-num">—</span> 首</div>
+    <div class="stat-item">提取真意象：<span id="stat-images" class="stat-num">—</span> 条</div>
+    <div class="stat-item">分类维度：<span class="stat-num">4层10维</span></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card" id="card-ind">
+    <div class="card-header">
+      <h2 class="card-title">核心意象 Top50</h2>
+      <button class="btn-action" onclick="toggleFullScreen('card-ind')">放大视图</button>
+    </div>
+    <div id="chart-ind" class="chart-container"></div>
+  </div>
+  <div class="card" id="card-cat">
+    <div class="card-header">
+      <h2 class="card-title">意象分类域分布</h2>
+      <button class="btn-action" onclick="toggleFullScreen('card-cat')">放大视图</button>
+    </div>
+    <div id="chart-cat" class="chart-container"></div>
+  </div>
+</div>
+
+<div style="margin-top: 20px; text-align: center;">
+  <a href="/graph/table" class="btn-action" style="text-decoration:none; font-size:15px; padding:12px 28px;">
+    📋 进入溯源数据查询 →
+  </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var ALL_DATA = [];
+var indChart = null;
+var catChart = null;
+
+async function loadData() {
+  const res = await fetch('/api/data');
+  const data = await res.json();
+  ALL_DATA = data.traceback || [];
+  document.getElementById('stat-poems').innerText = data.total_poems || 0;
+  document.getElementById('stat-images').innerText = data.total_images || 0;
+  renderCharts();
+}
+
+function renderCharts() {
+  var indCounts = {};
+  var catCounts = {};
+  ALL_DATA.forEach(function(item){
+    var t = item.txt || item['文本'] || '';
+    indCounts[t] = (indCounts[t] || 0) + 1;
+    catCounts[item.cat] = (catCounts[item.cat] || 0) + 1;
+  });
+  var sortedInd = Object.entries(indCounts).sort(function(a,b){ return b[1]-a[1]; }).slice(0,50);
+  var sortedCat = Object.entries(catCounts).sort(function(a,b){ return b[1]-a[1]; });
+
+  if (!indChart) indChart = echarts.init(document.getElementById('chart-ind'));
+  indChart.setOption({
+    tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
+    grid: { top:'8%', left:'5%', right:'5%', bottom:'25%' },
+    xAxis: { type:'category', data: sortedInd.map(function(x){return x[0];}), axisLabel:{ interval:0, rotate:30 } },
+    yAxis: { type:'value' },
+    dataZoom: [{ type:'slider', show:true, xAxisIndex:[0], start:0, end:40, bottom:0 }],
+    series: [{ name:'频次', type:'bar', barWidth:'60%', data: sortedInd.map(function(x){return x[1];}), itemStyle:{ color:'#3498db' } }]
+  }, true);
+
+  if (!catChart) catChart = echarts.init(document.getElementById('chart-cat'));
+  catChart.setOption({
+    tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
+    grid: { top:'8%', left:'5%', right:'5%', bottom:'15%' },
+    xAxis: { type:'category', data: sortedCat.map(function(x){return x[0];}), axisLabel:{ interval:0, rotate:15 } },
+    yAxis: { type:'value' },
+    series: [{ name:'频次', type:'bar', barWidth:'50%', data: sortedCat.map(function(x){return x[1];}), itemStyle:{ color:'#9b59b6' } }]
+  }, true);
+}
+
+function toggleFullScreen(elemId) {
+  var el = document.getElementById(elemId);
+  if (!document.fullscreenElement) { el.requestFullscreen().catch(function(e){ alert('全屏失败: '+e.message); }); }
+  else { document.exitFullscreen(); }
+}
+
+document.addEventListener('fullscreenchange', function(){
+  var f = !!document.fullscreenElement;
+  document.querySelectorAll('.chart-container').forEach(function(el){ el.style.height = f ? 'calc(100vh - 80px)' : '460px'; });
+  if (indChart) indChart.resize(); if (catChart) catChart.resize();
+});
+
+window.addEventListener('resize', function(){ if (indChart) indChart.resize(); if (catChart) catChart.resize(); });
+
+loadData();
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}导出历史 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<a href="/" class="back-link">← 返回标注工作台</a>
+<h1>导出历史</h1>
+<p class="subtitle">查看和下载之前的标注结果</p>
+
+<div class="card">
+    <h2>导出文件列表</h2>
+    <div class="table-wrap">
+        <table class="data-table" id="exports-table">
+            <thead><tr><th>文件名</th><th>大小</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody>
+                <tr><td colspan="4" style="text-align:center;">加载中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadExports() {
+    fetch('/api/list-exports')
+        .then(r => r.json())
+        .then(d => {
+            const tbody = document.querySelector('#exports-table tbody');
+            if (!d.ok || d.exports.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无导出文件</td></tr>';
+                return;
+            }
+            tbody.innerHTML = d.exports.map(f => {
+                const size = f.size > 1024 ? (f.size/1024).toFixed(1) + ' KB' : f.size + ' B';
+                let dlLink = '';
+                if (f.name.endsWith('.csv')) {
+                    dlLink = `<a href="/api/export/csv/${f.name}" class="btn btn-sm">下载</a>`;
+                } else if (f.name.endsWith('.json')) {
+                    dlLink = `<a href="/api/export/json/${f.name}" class="btn btn-sm">下载</a>`;
+                }
+                return `<tr><td>${f.name}</td><td>${size}</td><td>${f.mtime}</td><td>${dlLink}</td></tr>`;
+            }).join('');
+        });
+}
+
+loadExports();
+</script>
+{% endblock %}

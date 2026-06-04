@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}方案设计 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<h1>标注方案设计</h1>
+<p class="subtitle">定义数据表头，让 AI 反向设计专用标注提示词</p>
+
+<!-- Entry A: 手动定义表头 -->
+<div class="card">
+    <h2>方式一：手动定义表头</h2>
+    <p class="hint">添加你需要的数据列，每列指定列名和简短说明</p>
+
+    <div class="table-wrap">
+        <table class="data-table" id="headers-table">
+            <thead><tr><th style="width:40px">序</th><th>列名</th><th>说明</th><th style="width:60px">操作</th></tr></thead>
+            <tbody id="headers-tbody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-row">
+        <input type="text" id="new-header-name" placeholder="列名（如：意象类型）" style="flex:1">
+        <input type="text" id="new-header-desc" placeholder="说明（如：诗歌中出现的主要意象类别）" style="flex:2">
+        <button class="btn" onclick="addHeader()">添加列</button>
+    </div>
+</div>
+
+<!-- Entry B: AI 解析需求 -->
+<div class="card">
+    <h2>方式二：AI 自动推导表头</h2>
+    <p class="hint">用自然语言描述你的分析需求，AI 自动建议表头结构</p>
+
+    <textarea id="requirement-text" rows="4" placeholder="例如：我想分析李白诗歌中的自然意象类型、情感倾向、以及使用的修辞手法"></textarea>
+    <button class="btn btn-primary" id="btn-parse" onclick="parseRequirement()">AI 解析需求</button>
+
+    <div id="parse-result" style="display:none; margin-top:12px;">
+        <h3 id="parse-suggested-name"></h3>
+        <p id="parse-focus"></p>
+        <div class="table-wrap">
+            <table class="data-table" id="parse-headers-table">
+                <thead><tr><th>列名</th><th>说明</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button class="btn" onclick="adoptParsedHeaders()">采用此方案</button>
+    </div>
+</div>
+
+<!-- 模板管理 -->
+<div class="card">
+    <h2>模板管理</h2>
+    <div class="form-row">
+        <select id="template-select" onchange="loadTemplate(this.value)">
+            <option value="">-- 加载已保存的模板 --</option>
+        </select>
+        <input type="text" id="template-name" placeholder="模板名称">
+        <button class="btn" onclick="saveAsTemplate()">保存当前表头</button>
+    </div>
+</div>
+
+<!-- 触发 Prompt 1 -->
+<div class="card" id="design-card" style="display:none">
+    <h2>生成标注方案</h2>
+    <p class="hint">将当前表头发送给 AI，生成专用标注提示词、列映射和示例数据</p>
+    <button class="btn btn-primary btn-lg" id="btn-design" onclick="triggerDesign()">AI 生成标注方案</button>
+    <div id="design-status"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='schema.js') }}"></script>
+<script>
+// 初始加载模板列表
+fetch('/api/list-templates').then(r => r.json()).then(d => {
+    if (d.ok) {
+        const sel = document.getElementById('template-select');
+        d.templates.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t; opt.textContent = t;
+            sel.appendChild(opt);
+        });
+    }
+});
+</script>
+{% endblock %}

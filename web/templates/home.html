@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - 诗歌标注生产系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', '宋体', sans-serif; background: #f0f2f5; min-height: 100vh; }
+        .navbar { background: #1a1a2e; color: #fff; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .navbar .logo { font-size: 18px; font-weight: bold; }
+        .navbar .nav-links { display: flex; gap: 20px; align-items: center; }
+        .navbar .nav-links a { color: #ccc; text-decoration: none; font-size: 14px; transition: color 0.3s; }
+        .navbar .nav-links a:hover { color: #fff; }
+        .navbar .user-info { font-size: 13px; color: #aaa; }
+        .navbar .user-info .uname { color: #4fc3f7; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .hero { background: linear-gradient(135deg, #0f3460, #1a4a7a); border-radius: 12px; padding: 40px; color: #fff; margin-bottom: 30px; }
+        .hero h1 { font-size: 26px; margin-bottom: 10px; }
+        .hero p { font-size: 14px; color: #b0c4de; line-height: 1.8; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .card { background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); }
+        .card .icon { font-size: 32px; margin-bottom: 12px; }
+        .card h3 { font-size: 16px; color: #1a1a2e; margin-bottom: 8px; }
+        .card p { font-size: 13px; color: #888; line-height: 1.6; }
+        .card .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; margin-top: 10px; }
+        .badge-blue { background: #e3f2fd; color: #1565c0; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-orange { background: #fff3e0; color: #e65100; }
+        .quick-actions { background: #fff; border-radius: 10px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .quick-actions h3 { font-size: 16px; color: #1a1a2e; margin-bottom: 15px; }
+        .action-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+        .action-btn { padding: 10px 20px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .action-btn:hover { border-color: #0f3460; color: #0f3460; }
+        .api-section { background: #fff; border-radius: 10px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .api-section h3 { font-size: 16px; color: #1a1a2e; margin-bottom: 12px; }
+        .api-endpoint { font-family: 'Courier New', monospace; font-size: 12px; padding: 6px 12px; background: #f5f5f5; border-radius: 4px; margin: 4px 0; display: inline-block; }
+        .api-endpoint span.method { color: #1565c0; font-weight: bold; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">📜 诗歌标注平台</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">主页</a>
+            <a href="{{ url_for('dashboard') }}">控制台</a>
+            <a href="{{ url_for('logout') }}">退出</a>
+        </div>
+        <div class="user-info">欢迎，<span class="uname">{{ username }}</span></div>
+    </div>
+    <div class="container">
+        <div class="hero">
+            <h1>古典诗歌文本结构化标注生产系统</h1>
+            <p>输入原始诗歌文本，经多级管线处理后输出高维度结构化标注数据。<br>
+            本系统整合了输入适配、文本预处理、AI引擎生成、结果解析、数据校验、质量控制、多格式输出等完整生产流程。<br>
+            支持 TXT/JSON/CSV/MD 多种输入格式，输出 JSON/CSV/XML 结构化数据。</p>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="icon">📥</div>
+                <h3>数据导入</h3>
+                <p>支持批量导入诗歌文本，自动检测文件格式与编码，文本归一化预处理</p>
+                <span class="badge badge-blue">输入适配</span>
+            </div>
+            <div class="card">
+                <div class="icon">⚙️</div>
+                <h3>AI标注引擎</h3>
+                <p>基于模板引擎与大语言模型，自动生成结构化标注数据</p>
+                <span class="badge badge-green">核心处理</span>
+            </div>
+            <div class="card">
+                <div class="icon">✅</div>
+                <h3>校验与质控</h3>
+                <p>多层级数据校验、类型检查、一致性检测、置信度评分</p>
+                <span class="badge badge-orange">质量保障</span>
+            </div>
+        </div>
+        <div class="quick-actions">
+            <h3>快捷操作</h3>
+            <div class="action-btns">
+                <button class="action-btn" onclick="alert('模拟：启动新标注任务')">🚀 新建标注任务</button>
+                <button class="action-btn" onclick="alert('模拟：查看最近任务')">📋 查看任务列表</button>
+                <button class="action-btn" onclick="alert('模拟：导出标注数据')">📤 导出数据</button>
+                <button class="action-btn" onclick="alert('模拟：系统诊断')">🔍 系统诊断</button>
+            </div>
+        </div>
+        <div class="api-section">
+            <h3>API 接口列表</h3>
+            <div class="api-endpoint"><span class="method">POST</span> /api/v1/pipeline/run — 启动标注管线</div>
+            <div class="api-endpoint"><span class="method">GET</span> /api/v1/pipeline/status/:id — 查询任务状态</div>
+            <div class="api-endpoint"><span class="method">GET</span> /api/v1/pipeline/list — 管线任务列表</div>
+            <div class="api-endpoint"><span class="method">POST</span> /api/v1/annotations/submit — 提交标注数据</div>
+            <div class="api-endpoint"><span class="method">GET</span> /api/v1/annotations/list — 标注数据列表</div>
+            <div class="api-endpoint"><span class="method">GET</span> /api/v1/system/info — 系统信息</div>
+            <div class="api-endpoint"><span class="method">GET</span> /api/v1/system/health — 健康检查</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>唐诗意象智能分析系统 — 用户操作手册</title>
+<style>
+/* Word 兼容样式 — 复制到 Word 保留格式 */
+body { font-family: '宋体', SimSun, serif; font-size: 12pt; line-height: 1.6; color: #000; margin: 40px 60px; }
+h1 { font-size: 22pt; text-align: center; margin: 20pt 0 10pt; }
+h2 { font-size: 16pt; margin: 18pt 0 8pt; border-bottom: 2px solid #333; padding-bottom: 4pt; }
+h3 { font-size: 13pt; margin: 14pt 0 6pt; }
+h4 { font-size: 12pt; margin: 10pt 0 4pt; }
+p { text-indent: 2em; margin: 4pt 0; }
+p.no-indent { text-indent: 0; }
+table { border-collapse: collapse; width: 100%; margin: 8pt 0; }
+td, th { border: 1px solid #000; padding: 6pt 10pt; text-align: left; font-size: 11pt; }
+th { background: #f0f0f0; font-weight: bold; }
+ol, ul { margin: 4pt 0; padding-left: 2.5em; }
+li { margin: 2pt 0; }
+code { font-family: 'Courier New', monospace; background: #f5f5f5; padding: 1pt 4pt; font-size: 10.5pt; }
+pre { background: #f5f5f5; border: 1px solid #ccc; padding: 8pt; font-family: 'Courier New', monospace; font-size: 10pt; line-height: 1.4; margin: 6pt 0; white-space: pre-wrap; }
+blockquote { border-left: 4px solid #999; margin: 8pt 0; padding: 4pt 12pt; background: #f9f9f9; }
+.img-placeholder { background: #f0f0f0; border: 1px dashed #999; text-align: center; padding: 20pt; margin: 8pt 0; color: #666; font-size: 11pt; }
+.toc { margin: 16pt 0; }
+.toc a { color: #000; text-decoration: none; }
+.page-break { page-break-before: always; }
+.center { text-align: center; }
+.right { text-align: right; }
+.section-desc { background: #f8f8f8; border: 1px solid #ddd; padding: 8pt 12pt; margin: 6pt 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- 封面 -->
+<!-- ============================================================ -->
+
+<div style="text-align:center; margin-top:120pt;">
+  <h1 style="font-size:28pt; border:none; margin-bottom:30pt;">唐诗意象智能分析系统</h1>
+  <h2 style="font-size:18pt; border:none; font-weight:normal; margin-bottom:60pt;">用户操作手册</h2>
+  <p style="text-indent:0; font-size:14pt;">版本：V1.0</p>
+  <p style="text-indent:0; font-size:14pt;">开发完成日期：2026年5月</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 目录 -->
+<!-- ============================================================ -->
+
+<h1 style="text-align:left; border:none;">目录</h1>
+
+<div class="toc">
+<p class="no-indent">一、引言 ........................................ 3</p>
+<p class="no-indent" style="padding-left:2em;">1.1 项目背景</p>
+<p class="no-indent" style="padding-left:2em;">1.2 软件概述</p>
+<p class="no-indent" style="padding-left:2em;">1.3 运行环境</p>
+<p class="no-indent">二、安装与部署 ................................ 4</p>
+<p class="no-indent" style="padding-left:2em;">2.1 环境要求</p>
+<p class="no-indent" style="padding-left:2em;">2.2 安装步骤</p>
+<p class="no-indent" style="padding-left:2em;">2.3 启动方式</p>
+<p class="no-indent">三、功能介绍 .................................. 5</p>
+<p class="no-indent" style="padding-left:2em;">3.1 数据图谱</p>
+<p class="no-indent" style="padding-left:2em;">3.2 AI 智能问答</p>
+<p class="no-indent" style="padding-left:2em;">3.3 认知诗学意象解析</p>
+<p class="no-indent" style="padding-left:2em;">3.4 系统管理后台</p>
+<p class="no-indent" style="padding-left:2em;">3.5 数据导出</p>
+<p class="no-indent">四、CLI 命令行工具 ............................ 8</p>
+<p class="no-indent">五、维护说明 .................................. 9</p>
+<p class="no-indent" style="padding-left:2em;">5.1 日志查看</p>
+<p class="no-indent" style="padding-left:2em;">5.2 缓存清理</p>
+<p class="no-indent" style="padding-left:2em;">5.3 向量库管理</p>
+<p class="no-indent" style="padding-left:2em;">5.4 常见问题</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 一、引言 -->
+<!-- ============================================================ -->
+
+<h1>一、引言</h1>
+
+<h2>1.1 项目背景</h2>
+
+<p>唐诗是中国古典文学的瑰宝，其意象运用的精妙程度在世界诗歌史上独树一帜。传统文学研究中，意象标注工作量大、主观性强、难以跨文本比较，长期以来缺乏系统化的计算机辅助分析工具。</p>
+
+<p>本系统以认知诗学理论为指导，综合运用自然语言处理、向量检索（RAG）和大语言模型技术，实现对唐诗意象的系统化提取、分类标注、情感分析和多维度统计。旨在为古典文学研究者、教育工作者和诗歌爱好者提供一个集数据管理、智能检索、认知分析和可视化展示于一体的综合研究平台。</p>
+
+<h2>1.2 软件概述</h2>
+
+<p>唐诗意象智能分析系统是一款 B/S 架构的 Web 应用程序。系统后端使用 Python Flask 框架，前端采用原生 HTML/CSS/JavaScript 配合 ECharts 图表库，数据库层使用 ChromaDB 向量数据库实现语义检索，大语言模型调用层兼容 OpenAI 格式的本地或远程 API。</p>
+
+<p>系统主要包含以下核心功能模块：</p>
+<ul>
+  <li><b>数据图谱</b>：意象数据的可视化展示、多维度筛选与溯源浏览</li>
+  <li><b>AI 智能问答</b>：基于向量检索增强生成（RAG）的诗歌知识问答</li>
+  <li><b>认知诗学解析</b>：基于大语言模型的单意象深度分析</li>
+  <li><b>统计分析</b>：多维度数据聚合统计与交叉分析</li>
+  <li><b>数据导出</b>：支持 CSV、JSON、分析报告三种格式</li>
+  <li><b>系统管理</b>：系统状态监控、缓存管理、日志查看</li>
+</ul>
+
+<h2>1.3 运行环境</h2>
+
+<table>
+  <tr><th>项目</th><th>要求</th></tr>
+  <tr><td>操作系统</td><td>Windows 10/11、Linux、macOS</td></tr>
+  <tr><td>Python 版本</td><td>Python 3.10 及以上</td></tr>
+  <tr><td>Web 浏览器</td><td>Chrome 90+、Edge 90+、Firefox 90+</td></tr>
+  <tr><td>大模型服务</td><td>兼容 OpenAI API 格式的 LLM 服务（本地或远程）</td></tr>
+  <tr><td>磁盘空间</td><td>不低于 500 MB（含向量库和日志）</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 二、安装与部署 -->
+<!-- ============================================================ -->
+
+<h1>二、安装与部署</h1>
+
+<h2>2.1 环境要求</h2>
+
+<p>本系统依赖以下 Python 第三方库：</p>
+
+<table>
+  <tr><th>依赖库</th><th>版本要求</th><th>用途</th></tr>
+  <tr><td>Flask</td><td>&ge; 3.0.0</td><td>Web 框架</td></tr>
+  <tr><td>Requests</td><td>&ge; 2.28.0</td><td>HTTP 请求</td></tr>
+  <tr><td>ChromaDB</td><td>&ge; 0.4.0</td><td>向量数据库</td></tr>
+  <tr><td>openpyxl</td><td>&ge; 3.1.0</td><td>Excel 导出（可选）</td></tr>
+  <tr><td>fpdf2</td><td>最新版</td><td>PDF 生成（可选）</td></tr>
+</table>
+
+<h2>2.2 安装步骤</h2>
+
+<p>步骤一：确保已安装 Python 3.10 及以上版本。</p>
+<pre>python --version</pre>
+
+<p>步骤二：在项目目录下安装依赖。</p>
+<pre>cd 唐诗意象智能分析系统
+pip install -r requirements.txt</pre>
+
+<p>步骤三：（可选）如果缺少 ChromaDB 等库，可单独安装。</p>
+<pre>pip install flask requests chromadb openpyxl fpdf2</pre>
+
+<h2>2.3 启动方式</h2>
+
+<h3>2.3.1 启动 Web 服务</h3>
+<p>在项目根目录下执行：</p>
+<pre>python app.py</pre>
+<p>看到以下输出即表示启动成功：</p>
+<pre>Running on http://127.0.0.1:5000
+Running on http://192.168.1.xxx:5000</pre>
+<p>在浏览器中访问 <code>http://127.0.0.1:5000</code> 即可进入系统首页。</p>
+
+<h3>2.3.2 构建向量库（首次使用）</h3>
+<p>如果希望使用 AI 问答功能，需要先构建向量数据库：</p>
+<pre>python build_rag.py</pre>
+<p>该脚本会读取 <code>json_dataa/</code> 目录下的诗歌 JSON 文件，生成向量索引并保存到 <code>rag_db/</code> 目录。</p>
+
+<h3>2.3.3 CLI 命令行工具</h3>
+<p>系统还提供了命令行管理工具：</p>
+<pre>python cli.py status        # 查看系统状态
+python cli.py scan          # 扫描数据目录
+python cli.py test          # 运行单元测试
+python cli.py export -f csv # 导出数据
+python cli.py check-rag     # 检查向量库状态
+python cli.py clear-cache   # 清理缓存</pre>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 三、功能介绍 -->
+<!-- ============================================================ -->
+
+<h1>三、功能介绍</h1>
+
+<h2>3.1 数据图谱</h2>
+
+<p>数据图谱是系统的主页面，提供意象数据的可视化展示和交互式浏览功能。</p>
+
+<h3>3.1.1 统计概览</h3>
+<p>页面顶部以统计条形式展示三项核心指标：净解析诗歌数量、提取真意象条目总数、分类维度信息。同时还提供"回收站"入口按钮，方便恢复已删除的意象条目。</p>
+
+<div class="img-placeholder">【图3-1】数据图谱首页 — 统计概览与图表区域</div>
+
+<h3>3.1.2 核心意象 Top50</h3>
+<p>以柱状图展示出现频率最高的 50 个意象文本。图表支持鼠标悬停查看详情、拖拽缩放（底部滑块）、点击柱条自动筛选对应意象在数据表中的记录。右上角提供"放大视图"按钮，支持全屏查看。</p>
+
+<h3>3.1.3 意象分类域分布</h3>
+<p>按意象的大类归属展示分布情况（如自然意象-天文意象、自然意象-动物意象、人文意象-文化意象等）。同样支持点击筛选联动功能。</p>
+
+<h3>3.1.4 数据筛选与溯源表</h3>
+<p>数据表位于页面下方，提供以下筛选方式：</p>
+<ul>
+  <li><b>文本搜索</b>：按意象文本关键字搜索（如输入"月"可检索所有含"月"的意象）</li>
+  <li><b>分类域筛选</b>：按意象大类归属过滤</li>
+  <li><b>体裁筛选</b>：按诗歌体裁/标签过滤</li>
+  <li><b>情感倾向筛选</b>：按情感类别过滤</li>
+</ul>
+
+<div class="img-placeholder">【图3-2】数据筛选与溯源数据表</div>
+
+<p>数据表每行显示：诗歌编号、意象文本、所属诗歌、体裁/标签、大类归属、情感倾向、操作按钮。支持分页浏览，每页显示 25 条记录。每条记录可进行以下操作：</p>
+<ul>
+  <li><b>详情</b>：弹出模态框显示该意象的完整标注信息</li>
+  <li><b>解析</b>：打开认知诗学解析抽屉</li>
+  <li><b>删除</b>：将条目移入回收站</li>
+</ul>
+
+<h2>3.2 AI 智能问答</h2>
+
+<p>AI 问答功能基于 RAG（检索增强生成）架构，结合向量检索与大语言模型生成能力，实现基于诗歌原文资料的智能问答。</p>
+
+<h3>3.2.1 提问方式</h3>
+<p>在输入框中输入关于唐诗的问题，例如：</p>
+<ul>
+  <li>"杜甫写过哪些关于秋天的诗？"</li>
+  <li>"李白的《静夜思》中用了哪些意象？"</li>
+  <li>"唐诗中'月'的意象有哪些情感含义？"</li>
+</ul>
+
+<div class="img-placeholder">【图3-3】AI 问答界面 — 输入问题与检索结果</div>
+
+<h3>3.2.2 检索与回答</h3>
+<p>点击"检索并生成回答"按钮后，系统会：</p>
+<ol>
+  <li>自动识别问题中涉及的诗人（如有），进行针对性过滤</li>
+  <li>在向量库中执行语义检索，找到最相关的诗歌原文</li>
+  <li>左侧面板展示检索到的诗歌卡片（含相似度评分）</li>
+  <li>右侧区域以流式方式逐字输出大模型生成的回答</li>
+</ol>
+<p>诗歌卡片点击可展开查看全文。</p>
+
+<div class="img-placeholder">【图3-4】AI 问答 — 回答结果与检索诗歌展示</div>
+
+<h3>3.2.3 多轮追问</h3>
+<p>在回答生成完成后，可在底部输入框继续追问，系统会保留对话历史进行上下文理解，实现多轮交互式问答。</p>
+
+<h2>3.3 认知诗学意象解析</h2>
+
+<p>本功能面向专业研究场景，对单个意象进行深度认知诗学分析。在数据表的任意意象条目上点击"解析"按钮，即可从右侧展开解析抽屉。</p>
+
+<h3>3.3.1 解析界面</h3>
+<p>解析抽屉包含以下区域：</p>
+<ul>
+  <li><b>标题区域</b>：显示意象文本、所属诗歌名称、所在诗句</li>
+  <li><b>标签区</b>：展示该意象的结构化标注（感知通道、分类、表现功能、认知强度、情感信息等）</li>
+  <li><b>对话区</b>：显示 AI 解析内容和交互历史</li>
+  <li><b>输入区</b>：支持多轮追问</li>
+</ul>
+
+<div class="img-placeholder">【图3-5】认知诗学意象解析 — 右侧抽屉界面</div>
+
+<h3>3.3.2 解析维度</h3>
+<p>系统从以下五个维度对意象进行深度解析：</p>
+<ol>
+  <li><b>感知层</b>：分析意象触发的感官体验和通感效果</li>
+  <li><b>文化层</b>：追溯意象的典故来源和文化符号意义</li>
+  <li><b>情感层</b>：基于情感极性标注分析意象的情感功能</li>
+  <li><b>结构层</b>：分析意象在诗歌中的结构作用</li>
+  <li><b>跨诗比较</b>：比较同一意象在不同诗歌中的异同</li>
+</ol>
+
+<p>解析结果支持 Markdown 渲染，以结构化方式呈现分析内容。抽屉宽度支持拖拽调整，方便对照查看。</p>
+
+<div class="page-break"></div>
+
+<h2>3.4 系统管理后台</h2>
+
+<p>管理后台可通过 <code>http://127.0.0.1:5000/admin/</code> 访问，提供系统运维和数据分析功能。</p>
+
+<div class="img-placeholder">【图3-6】系统管理后台 — 状态面板与统计图表</div>
+
+<h3>3.4.1 系统状态面板</h3>
+<p>以卡片形式展示系统核心指标：净解析诗歌数、提取意象条目数、分类维度数、已知诗人数、向量数据库状态、内存缓存条目数、导出文件数、诗歌数据文件数。</p>
+
+<h3>3.4.2 统计分析图表</h3>
+<p>页面中部展示两张统计图表：</p>
+<ul>
+  <li><b>意象分类域分布图</b>：水平柱状图展示各类别的意象数量</li>
+  <li><b>情感类别分布图</b>：展示各情感类别的分布情况</li>
+</ul>
+
+<h3>3.4.3 操作面板</h3>
+<p>提供以下系统操作按钮：</p>
+<ul>
+  <li><b>刷新数据缓存</b>：重新从数据文件加载意象数据</li>
+  <li><b>导出 CSV</b>：将溯源数据导出为 CSV 格式</li>
+  <li><b>导出 JSON</b>：将完整数据导出为 JSON 格式</li>
+  <li><b>导出分析报告</b>：生成统计分析报告 JSON 文件</li>
+  <li><b>清理缓存</b>：清除所有内存缓存和文件缓存</li>
+</ul>
+
+<div class="img-placeholder">【图3-7】管理后台 — 操作面板与导出文件列表</div>
+
+<h3>3.4.4 系统配置表</h3>
+<p>展示当前系统运行配置，包括 Embedding 模型名、Chat 模型名、服务端口、检索数量、分页大小等参数。所有配置项集中在 <code>config.py</code> 中统一管理。</p>
+
+<h3>3.4.5 导出文件管理</h3>
+<p>列表展示所有已生成的历史导出文件，包含文件名、大小、生成时间。支持一键清空所有导出文件。</p>
+
+<h2>3.5 数据导出</h2>
+
+<p>系统支持三种数据导出格式：</p>
+
+<table>
+  <tr><th>格式</th><th>内容</th><th>用途</th></tr>
+  <tr><td>CSV</td><td>溯源数据表（含诗歌编号、意象文本、分类、情感等字段）</td><td>Excel 打开、数据统计</td></tr>
+  <tr><td>JSON</td><td>完整数据集（含统计概览）</td><td>程序接口、数据备份</td></tr>
+  <tr><td>分析报告</td><td>多维度统计分析结果</td><td>研究归档、文档编制</td></tr>
+</table>
+
+<p>CSV 文件采用 <code>utf-8-sig</code> 编码，兼容 Microsoft Excel 直接打开显示中文不乱码。</p>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 四、CLI 命令行工具 -->
+<!-- ============================================================ -->
+
+<h1>四、CLI 命令行工具</h1>
+
+<p>系统提供 <code>cli.py</code> 命令行管理工具，支持在终端中执行常见运维操作。使用方法：</p>
+
+<pre>python cli.py &lt;命令&gt; [参数]</pre>
+
+<p>可用命令列表：</p>
+
+<table>
+  <tr><th>命令</th><th>功能</th><th>示例</th></tr>
+  <tr><td><code>status</code></td><td>查看系统状态、目录和配置概览</td><td><code>python cli.py status</code></td></tr>
+  <tr><td><code>scan</code></td><td>扫描数据目录，统计文件数和诗歌数</td><td><code>python cli.py scan</code></td></tr>
+  <tr><td><code>export</code></td><td>导出数据（支持 csv/json/report）</td><td><code>python cli.py export -f csv</code></td></tr>
+  <tr><td><code>clear-cache</code></td><td>清理所有缓存</td><td><code>python cli.py clear-cache</code></td></tr>
+  <tr><td><code>list-exports</code></td><td>列出已生成的导出文件</td><td><code>python cli.py list-exports</code></td></tr>
+  <tr><td><code>check-rag</code></td><td>检查向量库的集合状态和文档数</td><td><code>python cli.py check-rag</code></td></tr>
+  <tr><td><code>build-rag</code></td><td>重新构建向量库</td><td><code>python cli.py build-rag</code></td></tr>
+  <tr><td><code>test</code></td><td>运行所有单元测试</td><td><code>python cli.py test -v</code></td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 五、维护说明 -->
+<!-- ============================================================ -->
+
+<h1>五、维护说明</h1>
+
+<h2>5.1 日志查看</h2>
+
+<p>系统日志默认保存到项目根目录的 <code>logs/app.log</code> 文件中。日志采用滚动写入方式，单个日志文件最大 10 MB，保留最近 5 个备份文件。日志级别默认为 INFO，可通过 <code>config.py</code> 中的 <code>LOG_LEVEL</code> 配置项调整。</p>
+
+<p>日志格式：</p>
+<pre>2026-05-10 14:24:50,052 [INFO] app: 启动系统 (http://0.0.0.0:5000)</pre>
+
+<p>控制台也会同步输出日志信息，方便实时监控。</p>
+
+<h2>5.2 缓存清理</h2>
+
+<p>系统采用双层缓存策略：</p>
+<ul>
+  <li><b>内存缓存</b>：存储最近访问的数据，读写速度快，程序重启后清空</li>
+  <li><b>文件缓存</b>：持久化到磁盘 <code>cache/</code> 目录，跨会话保留</li>
+</ul>
+
+<p>两种缓存均支持 TTL（生存时间）自动过期，默认 5 分钟。可在管理后台点击"清理缓存"按钮手动清理，或使用命令行：</p>
+<pre>python cli.py clear-cache</pre>
+
+<h2>5.3 向量库管理</h2>
+
+<p>向量数据库保存在 <code>rag_db/</code> 目录。如需重新构建，运行：</p>
+<pre>python build_rag.py</pre>
+<p>该操作会删除旧库并重新读取 <code>json_dataa/</code> 目录下的所有 JSON 文件生成向量索引。</p>
+
+<p>检查向量库状态：</p>
+<pre>python cli.py check-rag</pre>
+
+<h2>5.4 常见问题</h2>
+
+<h3>Q1：启动后浏览器访问不到页面？</h3>
+<p>请确保已在终端中运行 <code>python app.py</code> 且保持终端窗口不关闭。在浏览器地址栏输入 <code>http://127.0.0.1:5000</code> 而非 <code>0.0.0.0:5000</code>。</p>
+
+<h3>Q2：AI 问答没有返回结果？</h3>
+<p>请检查：① 是否已运行 <code>python build_rag.py</code> 构建向量库；② 大模型 API 服务是否正常运行（默认连接 <code>http://127.0.0.1:44787</code>）；③ 可在 <code>config.py</code> 中修改 API 地址和模型名。</p>
+
+<h3>Q3：如何修改服务端口？</h3>
+<p>编辑 <code>config.py</code> 中的 <code>FLASK_PORT</code> 配置项，默认 5000，修改后重启服务生效。</p>
+
+<h3>Q4：数据源文件放哪里？</h3>
+<p>JSON 格式的诗歌标注数据放在 <code>poem_json/</code> 目录，系统启动时自动加载。RAG 构建所需的 JSON 数据放在 <code>json_dataa/</code> 目录。</p>
+
+<h3>Q5：如何在其他电脑上使用？</h3>
+<p>在同一局域网内，其他电脑可通过 <code>http://192.168.x.x:5000</code>（服务器的局域网 IP）访问。如需外网访问，请配置反向代理（如 Nginx）。</p>
+
+<h3>Q6：控制台输出乱码怎么办？</h3>
+<p>在 Windows 下执行命令时加 <code>PYTHONIOENCODING=utf-8</code> 前缀，如：</p>
+<pre>PYTHONIOENCODING=utf-8 python app.py</pre>
+
+<div class="page-break"></div>
+
+<!-- ============================================================ -->
+<!-- 附录 -->
+<!-- ============================================================ -->
+
+<h1>附录</h1>
+
+<h2>附录A：软著申请材料生成</h2>
+
+<p>系统内置软著申请材料生成工具：</p>
+
+<p><b>生成源代码汇总文件：</b></p>
+<pre>PYTHONIOENCODING=utf-8 python generate_soft_copyright.py</pre>
+<p>输出文件 <code>软著_源代码汇总.txt</code>，包含功能描述、开发目的、文件清单及全部源代码（去空行、带行号、按模块分组）。</p>
+
+<p><b>生成 PDF 版本：</b></p>
+<pre>PYTHONIOENCODING=utf-8 python generate_soft_copyright_pdf.py</pre>
+<p>输出文件 <code>软著_源代码正文.pdf</code>，宋体排版，A4 页面，适合直接打印提交。</p>
+
+<h2>附录B：项目文件结构</h2>
+
+<div class="section-desc">
+<p class="no-indent" style="font-family:'Courier New',monospace; font-size:10pt; line-height:1.5;">
+├─ app.py                    — Flask Web 主程序（路由、API、数据加载）<br>
+├─ admin.py                  — 管理后台 Blueprint<br>
+├─ config.py                 — 系统全局配置<br>
+├─ logger.py                 — 日志系统<br>
+├─ errors.py                 — 统一异常处理<br>
+├─ validators.py             — 请求校验模块<br>
+├─ middleware.py              — 请求中间件<br>
+├─ cache.py                  — 缓存服务（内存 + 文件）<br>
+├─ models.py                 — 数据模型层<br>
+├─ analytics.py              — 数据统计分析服务<br>
+├─ export_service.py         — 数据导出服务<br>
+├─ preprocessor.py           — 数据预处理<br>
+├─ monitor.py                — 系统监控<br>
+├─ build_rag.py              — RAG 向量库构建<br>
+├─ query_rag.py              — RAG 检索与问答引擎<br>
+├─ cli.py                    — CLI 命令行工具<br>
+├─ utils.py                  — 通用工具函数<br>
+├─ json_to_3csv.py           — JSON 转 CSV 工具<br>
+├─ split_1kb.py              — 文件切分工具<br>
+├─ generate_soft_copyright.py    — 软著材料生成脚本<br>
+├─ generate_soft_copyright_pdf.py — PDF 生成脚本<br>
+├─ requirements.txt          — 依赖清单<br>
+├─ poem_json/                — 诗歌标注数据目录<br>
+├─ json_dataa/               — RAG 构建数据目录<br>
+├─ rag_db/                   — 向量数据库<br>
+├─ templates/<br>
+│  ├─ index.html             — 主界面模板<br>
+│  └─ admin.html             — 管理后台模板<br>
+└─ tests/                    — 单元测试（143 个测试用例）
+</p>
+</div>
+
+<h2>附录C：技术架构参数</h2>
+
+<table>
+  <tr><th>项目</th><th>参数</th></tr>
+  <tr><td>后端框架</td><td>Flask (Python 3.13)</td></tr>
+  <tr><td>前端图表</td><td>ECharts 5.5.0</td></tr>
+  <tr><td>向量数据库</td><td>ChromaDB（余弦相似度）</td></tr>
+  <tr><td>大模型接口</td><td>兼容 OpenAI API 格式（SSE 流式）</td></tr>
+  <tr><td>通信协议</td><td>HTTP REST + Server-Sent Events</td></tr>
+  <tr><td>数据格式</td><td>JSON / CSV（utf-8-sig）</td></tr>
+  <tr><td>缓存策略</td><td>内存缓存 + 文件缓存（TTL 5 分钟）</td></tr>
+  <tr><td>意象分类体系</td><td>3 大类 x 11 子类，10 个标注维度</td></tr>
+  <tr><td>代码规模</td><td>31 个源文件，约 6200 行</td></tr>
+  <tr><td>测试覆盖</td><td>143 个单元测试</td></tr>
+</table>
+
+<div style="text-align:center; margin-top:40pt;">
+  <p class="no-indent">— 全文完 —</p>
+  <p class="no-indent" style="color:#999; font-size:10pt;">唐诗意象智能分析系统 V1.0 用户操作手册</p>
+</div>
+
+</body>
+</html>

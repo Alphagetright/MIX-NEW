@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - CLI运维管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', '宋体', sans-serif; background: #0d1117; min-height: 100vh; color: #e6edf3; }
+        .navbar { background: #161b22; border-bottom: 1px solid #30363d; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .navbar .logo { font-size: 18px; font-weight: bold; color: #e6edf3; }
+        .navbar .logo .acc { color: #58a6ff; }
+        .navbar .nav-links { display: flex; gap: 20px; align-items: center; }
+        .navbar .nav-links a { color: #8b949e; text-decoration: none; font-size: 14px; transition: color 0.3s; }
+        .navbar .nav-links a:hover { color: #e6edf3; }
+        .navbar .user-info { font-size: 13px; color: #8b949e; }
+        .navbar .user-info .uname { color: #58a6ff; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .hero { background: linear-gradient(135deg, #0d4192, #1a4a7a); border-radius: 12px; padding: 40px; margin-bottom: 30px; border: 1px solid #30363d; }
+        .hero h1 { font-size: 26px; margin-bottom: 10px; }
+        .hero p { font-size: 14px; color: #b0c4de; line-height: 1.8; }
+        .hero .tagline { display: inline-block; padding: 4px 14px; background: rgba(255,255,255,0.1); border-radius: 20px; font-size: 12px; margin-top: 12px; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .card { background: #161b22; border-radius: 10px; padding: 25px; border: 1px solid #30363d; transition: border-color 0.2s; }
+        .card:hover { border-color: #58a6ff; }
+        .card .icon { font-size: 32px; margin-bottom: 12px; }
+        .card h3 { font-size: 16px; margin-bottom: 8px; }
+        .card p { font-size: 13px; color: #8b949e; line-height: 1.6; }
+        .card .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; margin-top: 10px; }
+        .badge-blue { background: #0d4192; color: #58a6ff; }
+        .badge-green { background: #0d4220; color: #3fb950; }
+        .badge-orange { background: #4a2c0d; color: #d29922; }
+        .quick-actions { background: #161b22; border-radius: 10px; padding: 25px; margin-top: 20px; border: 1px solid #30363d; }
+        .quick-actions h3 { font-size: 16px; margin-bottom: 15px; }
+        .action-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+        .action-btn { padding: 10px 20px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .action-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+        .api-section { background: #161b22; border-radius: 10px; padding: 25px; margin-top: 20px; border: 1px solid #30363d; }
+        .api-section h3 { font-size: 16px; margin-bottom: 12px; }
+        .api-section .desc { font-size: 13px; color: #8b949e; margin-bottom: 15px; }
+        .api-endpoint { font-family: 'Courier New', monospace; font-size: 12px; padding: 8px 14px; background: #0d1117; border-radius: 6px; margin: 6px 0; border: 1px solid #21262d; display: flex; align-items: center; gap: 10px; }
+        .api-endpoint .method { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .method-post { background: #0d4220; color: #3fb950; }
+        .method-get { background: #0d4192; color: #58a6ff; }
+        .api-endpoint .path { color: #e6edf3; }
+        .api-endpoint .desc { color: #8b949e; font-family: 'Microsoft YaHei', sans-serif; margin-left: auto; font-size: 11px; }
+        .footer-note { text-align: center; padding: 30px; font-size: 12px; color: #484f58; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><span class="acc">⌘</span> CLI 运维管理</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">主页</a>
+            <a href="{{ url_for('dashboard') }}">控制台</a>
+            <a href="{{ url_for('logout') }}">退出</a>
+        </div>
+        <div class="user-info">欢迎，<span class="uname">{{ username }}</span></div>
+    </div>
+    <div class="container">
+        <div class="hero">
+            <h1>唐诗意象数据运维管理系统</h1>
+            <p>基于模型发展趋势，本系统以 CLI 命令行作为核心交互方式，使 AI AGENT 可直接操控系统全部功能。<br>
+            通过远程 hook 机制实现 AI 提效，无需人工逐条输入命令。Web 界面提供人类可读的运维看板和 RESTful API，<br>
+            AI AGENT 可通过 API 直接调用 CLI 底层能力，形成"人类 + AI 双模式"的运维工作流。</p>
+            <span class="tagline">🤖 CLI 可直接被 AGENT 操控 · 远程 hook · AI 提效</span>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="icon">🔍</div>
+                <h3>数据扫描与监控</h3>
+                <p>递归扫描数据目录，三维分类统计（类型/大小/年龄），变更检测；实时采集系统资源，多维度健康评分</p>
+                <span class="badge badge-blue">数据层</span>
+            </div>
+            <div class="card">
+                <div class="icon">📤</div>
+                <h3>多格式数据导出</h3>
+                <p>支持 CSV/JSON/XML/TXT/HTML 五种标准格式导出，字段过滤、数据子集切片、历史管理</p>
+                <span class="badge badge-green">导出层</span>
+            </div>
+            <div class="card">
+                <div class="icon">📊</div>
+                <h3>报告与健康检查</h3>
+                <p>自动生成 Text/JSON/HTML 三格式运维报告，8 项自动化健康检查，阈值告警与修复建议</p>
+                <span class="badge badge-orange">运维层</span>
+            </div>
+        </div>
+        <div class="quick-actions">
+            <h3>快捷操作</h3>
+            <div class="action-btns">
+                <button class="action-btn" onclick="alert('模拟：执行数据目录扫描')">🔍 数据扫描</button>
+                <button class="action-btn" onclick="alert('模拟：采集系统快照')">📊 监控快照</button>
+                <button class="action-btn" onclick="alert('模拟：执行健康检查')">❤️ 健康检查</button>
+                <button class="action-btn" onclick="alert('模拟：生成运维报告')">📋 生成报告</button>
+                <button class="action-btn" onclick="alert('模拟：清除缓存')">🗑️ 清除缓存</button>
+            </div>
+        </div>
+        <div class="api-section">
+            <h3>API 接口列表</h3>
+            <p class="desc">AI AGENT 可通过以下 RESTful API 直接调用 CLI 功能，实现远程 hook 自动化运维</p>
+            <div class="api-endpoint"><span class="method method-post">POST</span><span class="path">/api/v1/cli/run</span><span class="desc">远程执行CLI命令</span></div>
+            <div class="api-endpoint"><span class="method method-get">GET</span><span class="path">/api/v1/cli/health</span><span class="desc">健康检查</span></div>
+            <div class="api-endpoint"><span class="method method-get">GET</span><span class="path">/api/v1/cli/status</span><span class="desc">系统状态</span></div>
+            <div class="api-endpoint"><span class="method method-get">GET</span><span class="path">/api/v1/cli/history</span><span class="desc">操作历史</span></div>
+            <div class="api-endpoint"><span class="method method-post">POST</span><span class="path">/api/v1/data/scan</span><span class="desc">数据扫描</span></div>
+            <div class="api-endpoint"><span class="method method-post">POST</span><span class="path">/api/v1/data/export</span><span class="desc">数据导出</span></div>
+            <div class="api-endpoint"><span class="method method-get">GET</span><span class="path">/api/v1/system/info</span><span class="desc">系统信息</span></div>
+            <div class="api-endpoint"><span class="method method-get">GET</span><span class="path">/api/v1/system/health</span><span class="desc">公开健康检查</span></div>
+        </div>
+        <div class="footer-note">设计理念：基于模型发展趋势，CLI 命令行使 AGENT 可直接操控，远程 hook 实现 AI 提效</div>
+    </div>
+</body>
+</html>

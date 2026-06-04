@@ -1,0 +1,731 @@
+{% extends "base.html" %}
+{% block title %}数据图谱 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_graph %}active{% endblock %}
+{% block nav_graph_open %}open{% endblock %}
+{% block nav_graph_sub %}open{% endblock %}
+{% block breadcrumb %}<span>数据图谱</span> · 意象可视化分析{% endblock %}
+
+{% block head_extra %}
+<style>
+  .chart-container { height: 400px; width: 100%; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 960px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  .stats-bar-wrap { text-align: center; margin-bottom: 24px; }
+  .stats-bar {
+    display: inline-flex; flex-wrap: wrap; gap: 24px;
+    justify-content: center; background: #f8f9fa;
+    padding: 14px 28px; border-radius: 50px; border: 1px solid #eee;
+  }
+  .stat-item { font-size: 15px; font-weight: bold; color: #555; }
+  .stat-num { color: #3498db; font-size: 19px; margin-left: 6px; }
+  .filter-bar {
+    display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+    background: #f8f9fa; padding: 14px; border-radius: 8px;
+  }
+  .filter-input, .filter-select {
+    padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; transition: 0.25s;
+  }
+  .filter-input:focus, .filter-select:focus {
+    border-color: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.35);
+  }
+  .filter-input { flex: 1; min-width: 200px; }
+  .table-wrapper {
+    max-height: 520px; overflow: auto; border: 1px solid #eee; border-radius: 8px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+  th, td { border: 1px solid #eee; padding: 10px 12px; text-align: left; vertical-align: middle; word-wrap: break-word; line-height: 1.5; }
+  th { background: #fafafa; position: sticky; top: 0; z-index: 5; font-weight: 600; }
+  tbody tr.data-row:hover { background-color: #eaf4fc; }
+  .tag { background: #ecf0f1; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #555; display: inline-block; }
+  .pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+  .pager button { padding: 8px 14px; border-radius: 8px; border: 1px solid #dce4ec; background: #fff; cursor: pointer; transition: 0.2s; }
+  .pager button:hover:not(:disabled) { border-color: #3498db; color: #3498db; }
+  .pager button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ops-cell { white-space: nowrap; }
+  .ops-cell .btn-link { background: none; border: none; padding: 0 8px; cursor: pointer; font-size: 14px; color: #3498db; font-weight: 600; }
+  .ops-cell .btn-link:hover { text-decoration: underline; }
+  .danger { color: #e74c3c; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 950; backdrop-filter: blur(3px); }
+  .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; width: min(1000px, 92vw); max-height: 82vh; border-radius: 12px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+  .close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: #999; }
+  .close-btn:hover { color: #e74c3c; }
+
+  /* Drawer */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+  .drawer-overlay.show { opacity: 1; visibility: visible; }
+  .analyze-drawer { position: fixed; top: 0; right: 0; width: 420px; max-width: 100vw; height: 100vh; background: #fff; z-index: 1001; box-shadow: -4px 0 20px rgba(0,0,0,0.1); transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+  .analyze-drawer.open { transform: translateX(0); }
+  .drawer-resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; z-index: 1005; background: transparent; transition: background 0.2s; }
+  .drawer-resizer:hover, .drawer-resizer.active { background: rgba(52,152,219,0.4); }
+  .analyze-drawer.no-transition { transition: none !important; }
+  .drawer-head { flex-shrink: 0; padding: 16px 44px 14px 18px; border-bottom: 1px solid #eee; position: relative; }
+  .drawer-close { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #999; border-radius: 8px; }
+  .drawer-close:hover { color: #e74c3c; background: #f5f5f5; }
+  .drawer-title-row { font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 8px; }
+  .drawer-title-row .hl { color: #3498db; }
+  .drawer-meta { font-size: 13px; color: #666; margin-bottom: 6px; }
+  .drawer-line { font-family: KaiTi, serif; font-size: 15px; line-height: 1.55; color: #333; }
+  .drawer-tags { flex-shrink: 0; padding: 10px 14px; border-bottom: 1px solid #eee; background: #fafbfc; max-height: 120px; overflow-y: auto; }
+  .tag-chip { display: inline-block; padding: 3px 10px; border-radius: 20px; background: #eaf4fd; color: #3498db; font-size: 12px; margin: 3px; }
+  .drawer-chat-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 16px; min-height: 0; }
+  .msg-row { display: flex; margin-bottom: 12px; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.assistant { justify-content: flex-start; }
+  .msg-bubble { max-width: 92%; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.65; word-break: break-word; }
+  .msg-bubble.user { background: #3498db; color: #fff; border-bottom-right-radius: 4px; }
+  .msg-bubble.assistant { background: #ecf0f1; color: #333; border-bottom-left-radius: 4px; }
+  .drawer-md { font-size: 14px; line-height: 1.65; }
+  .drawer-md h1, .drawer-md h2, .drawer-md h3 { margin: 0.6em 0 0.35em; font-size: 1.05em; }
+  .drawer-md p { margin: 0.45em 0; }
+  .drawer-md ul, .drawer-md ol { margin: 0.4em 0; padding-left: 1.2em; }
+  .drawer-md code { background: rgba(0,0,0,0.06); padding: 2px 5px; border-radius: 4px; font-size: 0.9em; }
+  .drawer-foot { flex-shrink: 0; padding: 12px 14px; border-top: 1px solid #eee; background: #fafafa; display: flex; gap: 10px; align-items: center; }
+  .drawer-foot input { flex: 1; padding: 11px 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 14px; }
+  .drawer-foot input:focus { border-color: #3498db; box-shadow: 0 0 8px rgba(52,152,219,0.35); }
+  .drawer-foot button { padding: 11px 18px; border-radius: 8px; border: none; background: #3498db; color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .drawer-foot button:hover { filter: brightness(1.05); }
+  .recycle-btn { background: #e67e22; color: #fff; padding: 10px 18px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; transition: 0.25s; box-shadow: 0 4px 10px rgba(230,126,34,0.25); }
+  .recycle-btn:hover { filter: brightness(1.05); transform: translateY(-2px); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-bar-wrap">
+  <div class="stats-bar">
+    <div class="stat-item">净解析诗歌：<span id="stat-poems" class="stat-num">0</span> 首</div>
+    <div class="stat-item">提取真意象：<span id="stat-images" class="stat-num">0</span> 条</div>
+    <div class="stat-item">分类维度：<span class="stat-num">4 层 10 维</span></div>
+  </div>
+  <div style="margin-top:16px;">
+    <button class="recycle-btn" onclick="openRecycle()">回收站 (<span id="recycle-count">0</span>)</button>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card" id="card-ind">
+    <div class="card-header">
+      <h2 class="card-title">核心意象 Top50</h2>
+      <button class="btn-action" onclick="toggleFullScreen('card-ind')">放大视图</button>
+    </div>
+    <div id="chart-ind" class="chart-container"></div>
+  </div>
+  <div class="card" id="card-cat">
+    <div class="card-header">
+      <h2 class="card-title">意象分类域分布</h2>
+      <button class="btn-action" onclick="toggleFullScreen('card-cat')">放大视图</button>
+    </div>
+    <div id="chart-cat" class="chart-container"></div>
+  </div>
+</div>
+
+<div class="card" id="table">
+  <div class="card-header">
+    <h2 class="card-title">意象溯源数据表 <span id="record-count" style="font-size:13px;color:#999;font-weight:400;"></span></h2>
+    <button class="btn-action" style="background:#e74c3c;color:#fff;display:none;" id="resetBtn" onclick="resetFilters()">清除筛选</button>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="searchTxt" class="filter-input" placeholder="搜索意象文本（如：山、月）..." onkeyup="applyFilters()">
+    <select id="filterCat" class="filter-select" onchange="applyFilters()"><option value="">所有分类域</option></select>
+    <select id="filterGenre" class="filter-select" onchange="applyFilters()"><option value="">所有体裁/标签</option></select>
+    <select id="filterEmotion" class="filter-select" onchange="applyFilters()"><option value="">所有情感倾向</option></select>
+  </div>
+  <div class="table-wrapper">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th style="width:9%;">诗歌编号</th><th style="width:11%;">意象文本</th>
+          <th style="width:20%;">所属诗歌</th><th style="width:14%;">体裁/标签</th>
+          <th style="width:18%;">大类归属</th><th style="width:12%;">情感倾向</th>
+          <th style="width:14%;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="traceback-body"></tbody>
+    </table>
+  </div>
+  <div class="pager">
+    <span id="page-info"></span>
+    <button type="button" id="page-prev" onclick="changePage(-1)">上一页</button>
+    <button type="button" id="page-next" onclick="changePage(1)">下一页</button>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('detailModal')">&times;</button>
+    <div id="md-content"></div>
+  </div>
+</div>
+
+<!-- Analyze Drawer -->
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeAnalyzeDrawer()"></div>
+<aside id="analyze-drawer" class="analyze-drawer" aria-hidden="true">
+  <div id="drawer-resizer" class="drawer-resizer"></div>
+  <div class="drawer-head">
+    <button class="drawer-close" onclick="closeAnalyzeDrawer()" aria-label="关闭">&times;</button>
+    <div class="drawer-title-row">意象：<span class="hl" id="drawer-img-text">—</span></div>
+    <div class="drawer-meta" id="drawer-poem-meta">《》</div>
+    <div class="drawer-line" id="drawer-line-text">诗句：—</div>
+  </div>
+  <div class="drawer-tags" id="drawer-tags"></div>
+  <div class="drawer-chat-scroll" id="drawer-chat-scroll">
+    <div id="drawer-messages"></div>
+  </div>
+  <div class="drawer-foot">
+    <input type="text" id="drawer-followup" placeholder="输入追问…" onkeydown="if(event.key==='Enter'){sendDrawerFollowup();}">
+    <button type="button" onclick="sendDrawerFollowup()">发送</button>
+  </div>
+</aside>
+
+<!-- Recycle Modal -->
+<div class="modal-overlay" id="recycleModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('recycleModal')">&times;</button>
+    <h2 style="color:#e67e22;margin-top:0;border-bottom:2px solid #eee;padding-bottom:12px;">已删除意象回收站</h2>
+    <div class="table-wrapper" style="flex:1;max-height:62vh;">
+      <table>
+        <thead><tr><th style="width:12%;">编号</th><th style="width:15%;">被删意象</th><th style="width:25%;">所属诗歌</th><th style="width:28%;">大类</th><th style="width:18%;">操作</th></tr></thead>
+        <tbody id="recycle-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const PAGE_SIZE = 25;
+const RENDER_LIMIT = 5000;
+let ALL_DATA = [];
+let DELETED_DATA = [];
+let filteredView = [];
+let currentPage = 1;
+let totalPoemsStat = 0;
+let indChart = null;
+let catChart = null;
+
+const DEFAULT_ANALYZE_PROMPT = '请从认知诗学角度深度解析这个意象在诗歌中的多维功能';
+const ANALYZE_CACHE = {};
+let currentCacheKey = null;
+
+function makeCacheKey(item) {
+  if (!item) return '';
+  return String(item.poem_id || '') + '_' + String(item.txt || item['文本'] || '');
+}
+
+function isCacheAnalysisComplete(ent) {
+  if (!ent) return false;
+  if (ent.done === true) return true;
+  if (ent.done === false) return false;
+  return Array.isArray(ent.messages) && ent.messages.length >= 2;
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function itemApiPayload(row) {
+  if (!row) return {};
+  const o = JSON.parse(JSON.stringify(row));
+  delete o._uid;
+  return o;
+}
+
+async function loadApiData() {
+  const res = await fetch('/api/data');
+  const data = await res.json();
+  totalPoemsStat = data.total_poems || 0;
+  ALL_DATA = data.traceback || [];
+  document.getElementById('stat-poems').innerText = totalPoemsStat;
+  ALL_DATA.forEach((item, index) => {
+    item._uid = 'img_' + index + '_' + Math.random().toString(36).substr(2, 5);
+  });
+  initCharts();
+  refreshAll();
+}
+
+function initCharts() {
+  const el1 = document.getElementById('chart-ind');
+  const el2 = document.getElementById('chart-cat');
+  if (!indChart) indChart = echarts.init(el1);
+  if (!catChart) catChart = echarts.init(el2);
+}
+
+function updateUIStats() {
+  document.getElementById('stat-images').innerText = ALL_DATA.length;
+  document.getElementById('recycle-count').innerText = DELETED_DATA.length;
+}
+
+function populateSelects() {
+  const cats = [...new Set(ALL_DATA.map(item => item.cat))].filter(Boolean);
+  const genres = [...new Set(ALL_DATA.map(item => item.genre))].filter(Boolean);
+  const emotions = [...new Set(ALL_DATA.map(item => item.emo_cat))].filter(Boolean);
+  const catSel = document.getElementById('filterCat');
+  const genSel = document.getElementById('filterGenre');
+  const emoSel = document.getElementById('filterEmotion');
+  const curCat = catSel.value, curGen = genSel.value, curEmo = emoSel.value;
+  catSel.innerHTML = '<option value="">所有分类域</option>';
+  genSel.innerHTML = '<option value="">所有体裁/标签</option>';
+  emoSel.innerHTML = '<option value="">所有情感倾向</option>';
+  cats.forEach(c => catSel.add(new Option(c, c)));
+  genres.forEach(g => genSel.add(new Option(g, g)));
+  emotions.forEach(e => emoSel.add(new Option(e, e)));
+  catSel.value = curCat; genSel.value = curGen; emoSel.value = curEmo;
+}
+
+function getFiltered() {
+  const searchTxt = document.getElementById('searchTxt').value.toLowerCase();
+  const selCat = document.getElementById('filterCat').value;
+  const selGen = document.getElementById('filterGenre').value;
+  const selEmo = document.getElementById('filterEmotion').value;
+  return ALL_DATA.filter(item => {
+    const t = (item.txt || item['文本'] || '').toLowerCase();
+    return t.includes(searchTxt) &&
+      (selCat === '' || item.cat === selCat) &&
+      (selGen === '' || item.genre === selGen) &&
+      (selEmo === '' || item.emo_cat === selEmo);
+  });
+}
+
+function renderTablePage() {
+  const dataArray = filteredView.slice(0, RENDER_LIMIT);
+  const total = dataArray.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > pages) currentPage = pages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = dataArray.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('traceback-body');
+  let html = '';
+  slice.forEach(item => {
+    const apiPayload = itemApiPayload(item);
+    const dataItem = encodeURIComponent(JSON.stringify(apiPayload));
+    const uid = item._uid;
+    html += '<tr class="data-row" data-uid="' + uid + '" data-item="' + dataItem + '">' +
+      '<td>' + escapeHtml(item.poem_id) + '</td>' +
+      '<td style="color:#2980b9;font-weight:bold;">' + escapeHtml(item.txt || item['文本']) + '</td>' +
+      '<td><b>' + escapeHtml(item.title) + '</b></td>' +
+      '<td><span class="tag">' + escapeHtml(item.genre) + '</span></td>' +
+      '<td>' + escapeHtml(item.cat) + '</td>' +
+      '<td>' + escapeHtml(item.emotion) + '</td>' +
+      '<td class="ops-cell">' +
+        '<button class="btn-link" onclick="openDetailModal(\'' + uid + '\', event)">详情</button>' +
+        '<button class="btn-link" onclick="openAnalyzeDrawer(\'' + uid + '\', event)">🔍解析</button>' +
+        '<a href="javascript:void(0)" class="danger" onclick="event.stopPropagation();deleteItem(\'' + uid + '\')">删除</a>' +
+      '</td></tr>';
+  });
+  if (total > RENDER_LIMIT) {
+    html += '<tr><td colspan="7" style="text-align:center;color:#e74c3c;background:#fff3f3;">仅渲染前 ' + RENDER_LIMIT + ' 条筛选结果，请缩小筛选范围。</td></tr>';
+  }
+  tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;color:#999;">暂无数据</td></tr>';
+  document.getElementById('record-count').innerText = '(共命中 ' + total + ' 条记录 · 第 ' + currentPage + '/' + pages + ' 页)';
+  document.getElementById('page-info').innerText = '每页 ' + PAGE_SIZE + ' 条';
+  document.getElementById('page-prev').disabled = currentPage <= 1;
+  document.getElementById('page-next').disabled = currentPage >= pages;
+}
+
+function openDetailModal(uid, ev) {
+  if (ev) ev.stopPropagation();
+  const item = ALL_DATA.find(i => i._uid === uid);
+  if (!item) return;
+  const w = item['文本'] || item.txt || '';
+  document.getElementById('md-content').innerHTML =
+    '<h2 style="color:#2c3e50;margin-top:0;border-bottom:2px solid #eee;padding-bottom:12px;">《' + escapeHtml(item.title) + '》 — 意象详情</h2>' +
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">意象文本</b><span style="color:#e74c3c;font-weight:bold;">' + escapeHtml(w) + '</span></div>' +
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">大类归属</b><span>' + escapeHtml(item.cat) + '</span></div>' +
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">结构化标注</b>' +
+      '<div style="margin-top:8px;font-size:13px;line-height:1.7;color:#344;">' +
+        '词性 ' + escapeHtml(String(item['词性'] || '')) + ' · 成分 ' + escapeHtml(String(item['成分类型'] || '')) + '<br>' +
+        '感知 ' + escapeHtml(String(item['感知通道'] || '')) + ' · 素材 ' + escapeHtml(String(item['素材类型'] || '')) + '<br>' +
+        '内部结构 ' + escapeHtml(String(item['内部结构'] || '')) + ' · 指涉 ' + escapeHtml(String(item['指涉来源'] || '')) + '<br>' +
+        '表现功能 ' + escapeHtml(String(item['表现功能'] || '')) + ' · 结构组 ' + escapeHtml(String(item['结构功能组'] || '')) + '<br>' +
+        '文化流通 ' + escapeHtml(String(item['文化流通性'] || '')) + ' · 跨文化性 ' + escapeHtml(String(item['跨文化性'] || '')) + '<br>' +
+        '认知强度 ' + escapeHtml(String(item['认知强度'] || '')) + ' · 核心意象 ' + escapeHtml(String(item['核心意象'] || '')) + '<br>' +
+        '情感极性 ' + escapeHtml(String(item['情感极性'] || '')) + ' · 类别 ' + escapeHtml(String(item['情感类别'] || '')) + ' · 置信度 ' + escapeHtml(String(item['情感置信度'] || '')) + '<br>' +
+        '大类编码 ' + escapeHtml(String(item['大类编码'] || '')) + ' · 子类 ' + escapeHtml(String(item['子类编码'] || '')) +
+      '</div></div>' +
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">四层摘要</b><span style="color:#16a085;">' + escapeHtml(item.dimensions) + '</span></div>' +
+    '<div style="margin-bottom:10px;"><b style="color:#7f8c8d;width:120px;display:inline-block;">情感倾向</b><span style="color:#e67e22;">' + escapeHtml(item.emotion) + '</span></div>' +
+    '<div><b style="color:#7f8c8d;display:block;margin-bottom:8px;">完整诗句</b>' +
+      '<div style="background:#f8f9fa;padding:14px;border-radius:8px;font-family:KaiTi,serif;font-size:17px;line-height:1.65;">' + escapeHtml(item.line) + '</div></div>';
+  document.getElementById('detailModal').style.display = 'block';
+}
+
+function mdToHtml(text) {
+  if (!text) return '';
+  if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+    try { return marked.parse(text, { breaks: true }); }
+    catch (e) { return '<p>' + escapeHtml(text) + '</p>'; }
+  }
+  return '<p>' + escapeHtml(text) + '</p>';
+}
+
+function getItemPayloadByUid(uid) {
+  const tr = document.querySelector('tr.data-row[data-uid="' + uid + '"]');
+  try {
+    const raw = tr && tr.getAttribute('data-item');
+    if (raw) return JSON.parse(decodeURIComponent(raw));
+  } catch (e) {}
+  return itemApiPayload(ALL_DATA.find(i => i._uid === uid));
+}
+
+function buildTagChips(item) {
+  const chips = [];
+  const pc = item['感知通道']; if (pc) chips.push(String(pc));
+  const cat = item.cat || '';
+  const shortCat = cat.includes('-') ? cat.split('-').pop().trim() : cat;
+  if (shortCat) chips.push(shortCat);
+  const fx = item['表现功能']; if (fx) chips.push(String(fx));
+  const cs = item['认知强度']; if (cs !== '' && cs != null) chips.push('认知强度' + cs);
+  const emo = item['情感类别'] || item.emo_cat || '';
+  const pol = item['情感极性'];
+  let emoChip = '';
+  if (emo && pol !== '' && pol != null) emoChip = String(emo) + String(pol);
+  else if (emo) emoChip = String(emo);
+  else if (pol !== '' && pol != null) emoChip = String(pol);
+  if (emoChip) chips.push(emoChip);
+  return chips.filter(Boolean);
+}
+
+function fillDrawerChrome(item) {
+  document.getElementById('drawer-img-text').textContent = item['文本'] || item.txt || '—';
+  document.getElementById('drawer-poem-meta').textContent = ('《' + (item.title || '') + '》 ' + (item.genre || '')).trim();
+  document.getElementById('drawer-line-text').textContent = '诗句：' + (item.line || '—');
+  const chips = buildTagChips(item);
+  document.getElementById('drawer-tags').innerHTML = chips.map(c => '<span class="tag-chip">' + escapeHtml(c) + '</span>').join('');
+}
+
+function scrollDrawerToBottom() {
+  const el = document.getElementById('drawer-chat-scroll');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function renderDrawerMessagesFromHistory(hist) {
+  const box = document.getElementById('drawer-messages');
+  box.innerHTML = '';
+  if (!hist || !hist.length) return;
+  hist.forEach(function(m) {
+    if (m.role === 'user') {
+      box.innerHTML += '<div class="msg-row user"><div class="msg-bubble user">' + escapeHtml(m.content) + '</div></div>';
+    } else if (m.role === 'assistant') {
+      box.innerHTML += '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md">' + mdToHtml(m.content) + '</div></div>';
+    }
+  });
+  scrollDrawerToBottom();
+}
+
+function openDrawerDom() {
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('analyze-drawer').classList.add('open');
+  document.getElementById('analyze-drawer').setAttribute('aria-hidden', 'false');
+}
+
+function closeAnalyzeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('analyze-drawer').classList.remove('open');
+  document.getElementById('analyze-drawer').setAttribute('aria-hidden', 'true');
+  currentCacheKey = null;
+}
+
+function openAnalyzeDrawer(uid, ev) {
+  if (ev) ev.stopPropagation();
+  const item = getItemPayloadByUid(uid);
+  const cacheKey = makeCacheKey(item);
+  currentCacheKey = cacheKey;
+  fillDrawerChrome(item);
+  openDrawerDom();
+  let ent = ANALYZE_CACHE[cacheKey];
+  if (!ent) {
+    ent = { item: JSON.parse(JSON.stringify(item)), messages: [], rendered: '', done: false, isStreaming: false, abortController: null };
+    ANALYZE_CACHE[cacheKey] = ent;
+  }
+  if (ent.isStreaming) { renderDrawerMessagesFromHistory(ent.messages); scrollDrawerToBottom(); return; }
+  if (isCacheAnalysisComplete(ent)) {
+    ent.done = true;
+    renderDrawerMessagesFromHistory(ent.messages);
+    scrollDrawerToBottom();
+    return;
+  }
+  ent.messages = []; ent.rendered = ''; ent.done = false;
+  document.getElementById('drawer-messages').innerHTML = '';
+  document.getElementById('drawer-followup').value = '';
+  runDrawerInitialStream(cacheKey, item, ent);
+}
+
+async function runDrawerInitialStream(cacheKey, item, ent) {
+  ent.isStreaming = true;
+  ent.abortController = new AbortController();
+  const bubbleId = 'bubble-' + Math.random().toString(36).substr(2, 9);
+  let acc = '';
+  const userHtml = '<div class="msg-row user"><div class="msg-bubble user">' + escapeHtml(DEFAULT_ANALYZE_PROMPT) + '</div></div>';
+  const asstHtml = '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">...</div></div>';
+  ent.rendered = userHtml + asstHtml;
+  if (currentCacheKey === cacheKey) {
+    document.getElementById('drawer-messages').innerHTML = ent.rendered;
+  }
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item: item, history: [], followup: DEFAULT_ANALYZE_PROMPT }),
+      signal: ent.abortController.signal
+    });
+    await readSSE(res, function(obj) {
+      if (obj.type === 'chunk' && obj.text) { acc += obj.text; }
+      else if (obj.type === 'error') { acc += '\n\n【错误】' + (obj.message || ''); }
+      ent.rendered = userHtml + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">' + mdToHtml(acc) + '</div></div>';
+      if (currentCacheKey === cacheKey) {
+        const bubble = document.getElementById(bubbleId);
+        if (bubble) bubble.innerHTML = mdToHtml(acc);
+        scrollDrawerToBottom();
+      }
+    }, { signal: ent.abortController.signal });
+    if (!ent.abortController.signal.aborted) {
+      ent.messages.push({ role: 'user', content: DEFAULT_ANALYZE_PROMPT }, { role: 'assistant', content: acc });
+      ent.done = true;
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      acc += '\n\n<p class="danger">请求失败：' + escapeHtml(String(e)) + '</p>';
+      ent.rendered = userHtml + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">' + mdToHtml(acc) + '</div></div>';
+      if (currentCacheKey === cacheKey) {
+        const bubble = document.getElementById(bubbleId);
+        if (bubble) bubble.innerHTML = mdToHtml(acc);
+      }
+    }
+  } finally {
+    ent.isStreaming = false; ent.abortController = null;
+    if (currentCacheKey === cacheKey) scrollDrawerToBottom();
+  }
+}
+
+async function sendDrawerFollowup() {
+  const cacheKey = currentCacheKey;
+  if (!cacheKey) return;
+  const ent = ANALYZE_CACHE[cacheKey];
+  if (!ent || !ent.messages.length || ent.isStreaming) return;
+  const inp = document.getElementById('drawer-followup');
+  const q = (inp.value || '').trim();
+  if (!q) return;
+  inp.value = '';
+  const hist = JSON.parse(JSON.stringify(ent.messages));
+  const item = ent.item || {};
+  ent.isStreaming = true; ent.abortController = new AbortController();
+  const bubbleId = 'bubble-' + Math.random().toString(36).substr(2, 9);
+  let acc = '';
+  const newQ = '<div class="msg-row user"><div class="msg-bubble user">' + escapeHtml(q) + '</div></div>';
+  const newA = '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">...</div></div>';
+  const baseRendered = ent.rendered;
+  ent.rendered = baseRendered + newQ + newA;
+  if (currentCacheKey === cacheKey) {
+    const box = document.getElementById('drawer-messages');
+    box.insertAdjacentHTML('beforeend', newQ + newA);
+    scrollDrawerToBottom();
+  }
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item: item, history: hist, followup: q }),
+      signal: ent.abortController.signal
+    });
+    await readSSE(res, function(obj) {
+      if (obj.type === 'chunk' && obj.text) { acc += obj.text; }
+      else if (obj.type === 'error') { acc += '\n\n【错误】' + (obj.message || ''); }
+      ent.rendered = baseRendered + newQ + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">' + mdToHtml(acc) + '</div></div>';
+      if (currentCacheKey === cacheKey) {
+        const bubble = document.getElementById(bubbleId);
+        if (bubble) bubble.innerHTML = mdToHtml(acc);
+        scrollDrawerToBottom();
+      }
+    }, { signal: ent.abortController.signal });
+    if (!ent.abortController.signal.aborted) {
+      ent.messages.push({ role: 'user', content: q }, { role: 'assistant', content: acc });
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      acc += '\n\n<p class="danger">请求失败：' + escapeHtml(String(e)) + '</p>';
+      ent.rendered = baseRendered + newQ + '<div class="msg-row assistant"><div class="msg-bubble assistant drawer-md" id="' + bubbleId + '">' + mdToHtml(acc) + '</div></div>';
+      if (currentCacheKey === cacheKey) {
+        const bubble = document.getElementById(bubbleId);
+        if (bubble) bubble.innerHTML = mdToHtml(acc);
+      }
+    }
+  } finally {
+    ent.isStreaming = false; ent.abortController = null;
+    if (currentCacheKey === cacheKey) scrollDrawerToBottom();
+  }
+}
+
+function changePage(delta) {
+  const dataArray = filteredView.slice(0, RENDER_LIMIT);
+  const pages = Math.max(1, Math.ceil(dataArray.length / PAGE_SIZE));
+  currentPage = Math.min(pages, Math.max(1, currentPage + delta));
+  renderTablePage();
+}
+
+function applyFilters() {
+  filteredView = getFiltered();
+  currentPage = 1;
+  const isFiltered = !!(document.getElementById('searchTxt').value || document.getElementById('filterCat').value || document.getElementById('filterGenre').value || document.getElementById('filterEmotion').value);
+  document.getElementById('resetBtn').style.display = isFiltered ? 'inline-flex' : 'none';
+  renderTablePage();
+}
+
+function resetFilters() {
+  document.getElementById('searchTxt').value = '';
+  document.getElementById('filterCat').value = '';
+  document.getElementById('filterGenre').value = '';
+  document.getElementById('filterEmotion').value = '';
+  applyFilters();
+}
+
+function updateCharts() {
+  let individualCounts = {};
+  let categoryCounts = {};
+  ALL_DATA.forEach(function(item) {
+    var tk = item.txt || item['文本'] || '';
+    individualCounts[tk] = (individualCounts[tk] || 0) + 1;
+    categoryCounts[item.cat] = (categoryCounts[item.cat] || 0) + 1;
+  });
+  var sortedInd = Object.entries(individualCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,50);
+  var sortedCat = Object.entries(categoryCounts).sort(function(a,b){return b[1]-a[1];});
+  indChart.setOption({
+    tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
+    grid: { top:'10%', left:'5%', right:'5%', bottom:'25%' },
+    xAxis: { type:'category', data: sortedInd.map(function(x){return x[0];}), axisLabel:{ interval:0, rotate:30 } },
+    yAxis: { type:'value' },
+    dataZoom: [{ type:'slider', show:true, xAxisIndex:[0], start:0, end:40, bottom:0 }],
+    series: [{ name:'频次', type:'bar', barWidth:'60%', data: sortedInd.map(function(x){return x[1];}), itemStyle:{ color:'#3498db' } }]
+  }, true);
+  catChart.setOption({
+    tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
+    grid: { top:'10%', left:'5%', right:'5%', bottom:'15%' },
+    xAxis: { type:'category', data: sortedCat.map(function(x){return x[0];}), axisLabel:{ interval:0, rotate:15 } },
+    yAxis: { type:'value' },
+    series: [{ name:'频次', type:'bar', barWidth:'50%', data: sortedCat.map(function(x){return x[1];}), itemStyle:{ color:'#9b59b6' } }]
+  }, true);
+}
+
+function refreshAll() {
+  updateUIStats();
+  populateSelects();
+  filteredView = getFiltered();
+  renderTablePage();
+  updateCharts();
+}
+
+function deleteItem(uid) {
+  const idx = ALL_DATA.findIndex(function(item){ return item._uid === uid; });
+  if (idx === -1) return;
+  const target = ALL_DATA.splice(idx, 1)[0];
+  DELETED_DATA.push(target);
+  const ck = makeCacheKey(target);
+  if (ck && ANALYZE_CACHE[ck]) {
+    if (ANALYZE_CACHE[ck].isStreaming && ANALYZE_CACHE[ck].abortController) ANALYZE_CACHE[ck].abortController.abort();
+    delete ANALYZE_CACHE[ck];
+  }
+  if (currentCacheKey === ck) closeAnalyzeDrawer();
+  refreshAll();
+}
+
+function restoreItem(uid) {
+  const idx = DELETED_DATA.findIndex(function(item){ return item._uid === uid; });
+  if (idx === -1) return;
+  ALL_DATA.push(DELETED_DATA.splice(idx, 1)[0]);
+  refreshAll();
+  renderRecycleBin();
+}
+
+function renderRecycleBin() {
+  var tbody = document.getElementById('recycle-body');
+  var html = '';
+  if (DELETED_DATA.length === 0) {
+    html = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#999;">回收站为空</td></tr>';
+  } else {
+    DELETED_DATA.forEach(function(item) {
+      html += '<tr><td>' + escapeHtml(item.poem_id) + '</td>' +
+        '<td style="color:#e74c3c;font-weight:bold;text-decoration:line-through;">' + escapeHtml(item.txt) + '</td>' +
+        '<td>' + escapeHtml(item.title) + '</td><td>' + escapeHtml(item.cat) + '</td>' +
+        '<td><button class="btn-action" style="background:#2ecc71;color:#fff;padding:6px 10px;font-size:12px;" onclick="restoreItem(\'' + item._uid + '\')">恢复</button></td></tr>';
+    });
+  }
+  tbody.innerHTML = html;
+}
+
+function openRecycle() { renderRecycleBin(); document.getElementById('recycleModal').style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function toggleFullScreen(elemId) {
+  const el = document.getElementById(elemId);
+  if (!document.fullscreenElement) { el.requestFullscreen().catch(function(err){ alert('全屏失败: '+err.message); }); }
+  else { document.exitFullscreen(); }
+}
+
+document.addEventListener('fullscreenchange', function() {
+  const isFull = !!document.fullscreenElement;
+  document.querySelectorAll('.chart-container').forEach(function(el){ el.style.height = isFull ? 'calc(100vh - 80px)' : '400px'; });
+  if (indChart) indChart.resize(); if (catChart) catChart.resize();
+});
+
+async function readSSE(response, onJson, opts) {
+  const signal = opts && opts.signal;
+  if (signal && signal.aborted) return;
+  const reader = response.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  while (true) {
+    if (signal && signal.aborted) { try { await reader.cancel(); } catch(e){} break; }
+    let readResult;
+    try { readResult = await reader.read(); } catch(err) { if (signal && signal.aborted) break; throw err; }
+    const { value, done } = readResult;
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const parts = buf.split('\n\n');
+    buf = parts.pop() || '';
+    for (const block of parts) {
+      const lines = block.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try { onJson(JSON.parse(line.slice(6))); } catch(e){}
+        }
+      }
+    }
+  }
+}
+
+// Drawer resize
+(function(){
+  const drw = document.getElementById('analyze-drawer');
+  const resizer = document.getElementById('drawer-resizer');
+  let isResizing = false;
+  resizer.addEventListener('mousedown', function(e) {
+    isResizing = true; resizer.classList.add('active');
+    drw.classList.add('no-transition');
+    document.body.style.cursor = 'ew-resize'; document.body.style.userSelect = 'none';
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    let w = window.innerWidth - e.clientX;
+    if (w < 320) w = 320; if (w > window.innerWidth - 80) w = window.innerWidth - 80;
+    drw.style.width = w + 'px';
+  });
+  document.addEventListener('mouseup', function() {
+    if (isResizing) { isResizing = false; resizer.classList.remove('active'); drw.classList.remove('no-transition'); document.body.style.cursor = ''; document.body.style.userSelect = ''; }
+  });
+})();
+
+window.addEventListener('resize', function() { if (indChart) indChart.resize(); if (catChart) catChart.resize(); });
+
+loadApiData().then(function() {
+  if (indChart) indChart.on('click', function(p) { resetFilters(); document.getElementById('searchTxt').value = p.name; applyFilters(); document.getElementById('dataTable').scrollIntoView({ behavior:'smooth', block:'start' }); });
+  if (catChart) catChart.on('click', function(p) { resetFilters(); document.getElementById('filterCat').value = p.name; applyFilters(); document.getElementById('dataTable').scrollIntoView({ behavior:'smooth', block:'start' }); });
+});
+</script>
+{% endblock %}

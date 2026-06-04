@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}古典诗歌文本结构化标注生产系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="/" class="nav-brand">古典诗歌标注系统</a>
+        <div class="nav-links" id="nav-links">
+            <a href="/">标注工作台</a>
+            <a href="/history">导出历史</a>
+            <a href="/conversations">对话历史</a>
+            <span id="nav-user" style="font-size:12px;color:#888;margin-left:8px;"></span>
+            <a href="/login" id="nav-login" style="display:none">登录</a>
+            <a href="/register" id="nav-register" style="display:none">注册</a>
+            <a href="#" id="nav-logout" style="display:none" onclick="doLogout();return false">退出</a>
+            <button class="btn btn-sm btn-icon" id="btn-settings" title="LLM 连接设置" onclick="openSettings()">⚙</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- LLM 设置弹窗 -->
+    <div class="modal-overlay" id="settings-modal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>LLM 连接设置</h2>
+                <button class="btn-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <label>API 地址</label>
+                    <input type="text" id="cfg-api-url" placeholder="http://127.0.0.1:44787/v1/chat/completions">
+                </div>
+                <div class="form-row">
+                    <label>模型名称</label>
+                    <input type="text" id="cfg-model" placeholder="留空自动检测">
+                </div>
+                <div class="form-row">
+                    <label>试跑首数</label>
+                    <input type="number" id="cfg-test-count" value="5" min="1" max="20">
+                </div>
+                <p class="hint">修改后即时生效，无需重启</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeSettings()">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" style="display:none"></div>
+    {% block scripts %}{% endblock %}
+    <script>
+    function toast(msg, ok = true) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+        el.style.display = 'block';
+        clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function openSettings() {
+        const stored = JSON.parse(localStorage.getItem('poemlab_settings') || '{}');
+        document.getElementById('cfg-api-url').value = stored.api_url || '{{ api_url }}';
+        document.getElementById('cfg-model').value = stored.model || '';
+        document.getElementById('cfg-test-count').value = stored.test_count || 5;
+        document.getElementById('settings-modal').style.display = 'flex';
+    }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+    function saveSettings() {
+        const s = {
+            api_url: document.getElementById('cfg-api-url').value.trim(),
+            model: document.getElementById('cfg-model').value.trim(),
+            test_count: parseInt(document.getElementById('cfg-test-count').value) || 5
+        };
+        localStorage.setItem('poemlab_settings', JSON.stringify(s));
+        closeSettings();
+        toast('设置已保存');
+    }
+    function getSettings() {
+        return JSON.parse(localStorage.getItem('poemlab_settings') || '{}');
+    }
+
+    function doLogout() {
+        fetch('/api/auth/logout', {method: 'POST'}).then(r => r.json()).then(() => {
+            window.location.href = '/login';
+        });
+    }
+
+    function checkAuth() {
+        fetch('/api/auth/me').then(r => r.json()).then(d => {
+            const userEl = document.getElementById('nav-user');
+            const loginEl = document.getElementById('nav-login');
+            const regEl = document.getElementById('nav-register');
+            const logoutEl = document.getElementById('nav-logout');
+            if (d.logged_in) {
+                if (userEl) userEl.textContent = d.user.username + ('admin' === d.user.role ? ' (管理)' : '');
+                if (loginEl) loginEl.style.display = 'none';
+                if (regEl) regEl.style.display = 'none';
+                if (logoutEl) logoutEl.style.display = '';
+            } else {
+                if (userEl) userEl.textContent = '';
+                if (loginEl) loginEl.style.display = '';
+                if (regEl) regEl.style.display = '';
+                if (logoutEl) logoutEl.style.display = 'none';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+</body>
+</html>

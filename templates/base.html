@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}唐诗意象智能分析系统{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --accent: #3498db;
+      --bg: #f4f7f6;
+      --text: #333;
+      --card: #ffffff;
+      --success: #2ecc71;
+      --warn: #e67e22;
+      --sidebar-w: 220px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ====== Sidebar ====== */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      color: #c8ccd4;
+      display: flex;
+      flex-direction: column;
+      z-index: 900;
+      overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .sidebar-brand .logo {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .sidebar-brand h2 {
+      font-size: 15px; color: #fff; font-weight: 600;
+    }
+    .sidebar-brand .ver {
+      font-size: 11px; color: #7f8c8d; margin-top: 4px;
+    }
+    .sidebar-nav {
+      flex: 1; padding: 12px 0;
+    }
+    .nav-section { margin-bottom: 2px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 22px;
+      color: #b0b8c4;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+    .nav-item.active {
+      background: rgba(52,152,219,0.15);
+      color: #3498db;
+      border-left-color: #3498db;
+    }
+    .nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+    .nav-sub {
+      display: none;
+      background: rgba(0,0,0,0.15);
+    }
+    .nav-sub.open { display: block; }
+    .nav-sub .nav-item {
+      padding-left: 54px;
+      font-size: 13px;
+    }
+    .nav-expand {
+      float: right;
+      font-size: 11px;
+      transition: transform 0.2s;
+    }
+    .nav-expand.open { transform: rotate(90deg); }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+    }
+    .sidebar-footer a {
+      color: #7f8c8d;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-footer a:hover { color: #e74c3c; }
+
+    /* ====== Main Content ====== */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    /* Top bar */
+    .topbar {
+      background: #fff;
+      height: 56px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .topbar .breadcrumb {
+      font-size: 14px;
+      color: #666;
+    }
+    .topbar .breadcrumb span { color: var(--accent); font-weight: 600; }
+    .topbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: #888;
+    }
+    .topbar .btn-logout {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      color: #888;
+      transition: 0.2s;
+    }
+    .topbar .btn-logout:hover { border-color: #e74c3c; color: #e74c3c; }
+
+    /* Page body */
+    .page-body {
+      flex: 1;
+      padding: 24px;
+      width: 100%;
+    }
+
+    /* Reusable card */
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 17px;
+      color: var(--primary);
+      border-left: 4px solid var(--accent);
+      padding-left: 12px;
+    }
+    .btn-action {
+      background: #ecf0f1;
+      color: var(--primary);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: 0.2s;
+    }
+    .btn-action:hover { background: var(--accent); color: #fff; }
+
+    /* Stats grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border-top: 4px solid var(--accent);
+    }
+    .stat-card .num {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .stat-card .lbl {
+      font-size: 13px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .stat-card.c1 { border-top-color: #3498db; }
+    .stat-card.c2 { border-top-color: #2ecc71; }
+    .stat-card.c3 { border-top-color: #e67e22; }
+    .stat-card.c4 { border-top-color: #9b59b6; }
+
+    /* Quick links */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .quick-link {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      text-decoration: none;
+      color: var(--primary);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: block;
+    }
+    .quick-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .quick-link .icon-lg { font-size: 40px; margin-bottom: 12px; display: block; }
+    .quick-link h3 { font-size: 16px; margin-bottom: 6px; }
+    .quick-link p { font-size: 12px; color: #999; }
+
+    @media (max-width: 900px) {
+      .sidebar { width: 60px; }
+      .sidebar-brand h2, .sidebar-brand .ver,
+      .nav-item span:not(.icon), .nav-expand,
+      .sidebar-footer { display: none; }
+      :root { --sidebar-w: 60px; }
+      .nav-item { justify-content: center; padding: 14px; }
+      .nav-sub .nav-item { padding-left: 14px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .quick-links { grid-template-columns: 1fr; }
+    }
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">唐</div>
+    <h2>唐诗意象分析系统</h2>
+    <div class="ver">V1.0</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item {% block nav_dashboard %}{% endblock %}">
+      <span class="icon">🏠</span> <span>首页</span>
+    </a>
+    <div class="nav-section">
+      <div class="nav-item {% block nav_graph %}{% endblock %}"
+           onclick="toggleSubNav(this)">
+        <span class="icon">📊</span> <span>数据图谱</span>
+        <span class="nav-expand {% block nav_graph_open %}{% endblock %}">▶</span>
+      </div>
+      <div class="nav-sub {% block nav_graph_sub %}{% endblock %}">
+        <a href="/graph" class="nav-item">意象统计图表</a>
+        <a href="/graph/table" class="nav-item">溯源数据查询</a>
+        <a href="/recycle" class="nav-item">回收站管理</a>
+      </div>
+    </div>
+    <a href="/ai" class="nav-item {% block nav_ai %}{% endblock %}">
+      <span class="icon">🤖</span> <span>AI 智能问答</span>
+    </a>
+    <a href="/admin" class="nav-item {% block nav_admin %}{% endblock %}">
+      <span class="icon">⚙️</span> <span>管理后台</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/logout">⏻ 退出登录</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main-content">
+  <div class="topbar">
+    <div class="breadcrumb">{% block breadcrumb %}首页{% endblock %}</div>
+    <div class="user-info">
+      当前用户: <strong>{{ session.user }}</strong>
+      <a href="/logout" class="btn-logout">退出</a>
+    </div>
+  </div>
+  <div class="page-body">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script>
+function toggleSubNav(el) {
+  const expand = el.querySelector('.nav-expand');
+  const sub = el.parentElement.querySelector('.nav-sub');
+  if (sub) {
+    sub.classList.toggle('open');
+    if (expand) expand.classList.toggle('open');
+  }
+}
+// Highlight current nav
+(function() {
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const href = el.getAttribute('href');
+    if (href === path || (href && path.startsWith(href) && href !== '/')) {
+      el.classList.add('active');
+    }
+  });
+})();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

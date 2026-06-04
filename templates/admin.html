@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}管理后台 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_admin %}active{% endblock %}
+{% block breadcrumb %}<span>管理后台</span> · 系统状态与运维{% endblock %}
+
+{% block head_extra %}
+<style>
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; }
+  .stat-card .num { font-size: 32px; font-weight: 800; color: #3498db; }
+  .stat-card .label { font-size: 13px; color: #888; margin-top: 6px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .chart-box { height: 340px; width: 100%; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
+  .btn-primary { background: #3498db; color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-success { background: #2ecc71; color: #fff; }
+  .btn-warn { background: #e67e22; color: #fff; }
+  .btn-danger { background: #e74c3c; color: #fff; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .action-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .export-list { max-height: 300px; overflow-y: auto; }
+  .prop-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .prop-table th, .prop-table td { border: 1px solid #eee; padding: 10px 14px; text-align: left; }
+  .prop-table th { background: #fafafa; font-weight: 600; }
+  .prop-table tr:hover { background: #f8f9fa; }
+  .toast { position: fixed; bottom: 30px; right: 30px; background: #2c3e50; color: #fff; padding: 14px 24px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: 0.3s; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="stats-panel" class="stats-grid"></div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2 class="card-title">意象分类域分布</h2>
+    <div id="chart-cat" class="chart-box"></div>
+  </div>
+  <div class="card">
+    <h2 class="card-title">情感类别分布</h2>
+    <div id="chart-emo" class="chart-box"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">系统配置</h2>
+  <table class="prop-table" id="config-table"></table>
+</div>
+
+<div class="card">
+  <h2 class="card-title">数据管理</h2>
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="refreshData()">🔄 刷新数据缓存</button>
+    <button class="btn btn-success" onclick="exportData('csv')">📊 导出 CSV</button>
+    <button class="btn btn-success" onclick="exportData('json')">📄 导出 JSON</button>
+    <button class="btn btn-success" onclick="exportData('report')">📋 导出分析报告</button>
+    <button class="btn btn-warn" onclick="clearCache()">🗑️ 清理缓存</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">系统维护</h2>
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="scanData()">🔍 扫描数据目录</button>
+    <button class="btn" style="background:#17a2b8;color:#fff;" onclick="checkRag()">📦 检查向量库</button>
+    <button class="btn btn-warn" onclick="buildRag()">🏗️ 构建向量库</button>
+    <button class="btn btn-danger" onclick="runTests()">🧪 运行单元测试</button>
+  </div>
+  <div id="task-result" style="display:none;margin-top:12px;padding:14px;border-radius:8px;background:#f8f9fa;border:1px solid #eee;font-size:13px;line-height:1.65;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:Consolas,monospace;"></div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">导出文件列表</h2>
+  <div class="action-bar">
+    <button class="btn btn-danger btn-sm" onclick="clearExports()">清空全部</button>
+  </div>
+  <div class="export-list" id="export-list"><p style="color:#999;">加载中...</p></div>
+</div>
+
+<div id="toast" class="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let catChart = null;
+let emoChart = null;
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function showToast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isError ? '#e74c3c' : '#2c3e50';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 3000);
+}
+
+async function loadStatus() {
+  try {
+    const s = await fetchJSON('/admin/api/status');
+    const panel = document.getElementById('stats-panel');
+    panel.innerHTML =
+      '<div class="stat-card"><div class="num">' + s.data.total_poems + '</div><div class="label">净解析诗歌</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.data.total_images + '</div><div class="label">提取意象条目</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.data.category_count + '</div><div class="label">分类维度</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.data.known_authors_count + '</div><div class="label">已知诗人</div></div>' +
+      '<div class="stat-card"><div class="num">' + (s.rag_database.exists ? '<span style="color:#2ecc71;">✓</span>' : '<span style="color:#e74c3c;">✗</span>') + '</div><div class="label">向量数据库 (' + (s.rag_database.file_count || 0) + ' 文件)</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.cache.memory_entries + '</div><div class="label">内存缓存条目</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.exports.file_count + '</div><div class="label">导出文件</div></div>' +
+      '<div class="stat-card"><div class="num">' + s.poem_json.file_count + '</div><div class="label">诗歌数据文件</div></div>';
+    const configTable = document.getElementById('config-table');
+    configTable.innerHTML = Object.entries(s.config).map(function(e){
+      return '<tr><td>' + e[0] + '</td><td>' + e[1] + '</td></tr>';
+    }).join('');
+  } catch (e) { showToast('加载状态失败: ' + e.message, true); }
+}
+
+async function loadStats() {
+  try {
+    const stats = await fetchJSON('/admin/api/stats');
+    const catData = (stats.category_stats || []).slice(0, 30);
+    const emoData = (stats.emotion_stats || []).slice(0, 20);
+    if (!catChart) catChart = echarts.init(document.getElementById('chart-cat'));
+    catChart.setOption({
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      grid: { top: '8%', left: '15%', right: '5%', bottom: '20%' },
+      xAxis: { type: 'value' },
+      yAxis: { type: 'category', data: catData.map(function(d){return d.category;}).reverse(), axisLabel: { fontSize: 11 } },
+      series: [{ type: 'bar', data: catData.map(function(d){return d.count;}).reverse(), itemStyle: { color: '#9b59b6' }, barWidth: '60%' }]
+    }, true);
+    if (!emoChart) emoChart = echarts.init(document.getElementById('chart-emo'));
+    emoChart.setOption({
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      grid: { top: '8%', left: '5%', right: '5%', bottom: '20%' },
+      xAxis: { type: 'category', data: emoData.map(function(d){return d.emotion;}), axisLabel: { interval: 0, rotate: 20, fontSize: 11 } },
+      yAxis: { type: 'value' },
+      series: [{ type: 'bar', data: emoData.map(function(d){return d.count;}), itemStyle: { color: '#e67e22' }, barWidth: '50%' }]
+    }, true);
+    window.addEventListener('resize', function(){ if(catChart) catChart.resize(); if(emoChart) emoChart.resize(); });
+  } catch (e) { showToast('加载统计数据失败: ' + e.message, true); }
+}
+
+async function loadExports() {
+  try {
+    const data = await fetchJSON('/admin/api/exports');
+    const list = document.getElementById('export-list');
+    if (!data.exports || !data.exports.length) { list.innerHTML = '<p style="color:#999;">暂无导出文件</p>'; return; }
+    list.innerHTML = '<table class="prop-table"><thead><tr><th>文件名</th><th>大小</th><th>修改时间</th></tr></thead><tbody>' +
+      data.exports.map(function(f){
+        var size = f.size > 1024 ? (f.size / 1024).toFixed(1) + ' KB' : f.size + ' B';
+        var time = new Date(f.mtime * 1000).toLocaleString();
+        return '<tr><td>' + f.name + '</td><td>' + size + '</td><td>' + time + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  } catch (e) { document.getElementById('export-list').innerHTML = '<p style="color:#e74c3c;">加载失败</p>'; }
+}
+
+async function refreshData() {
+  try {
+    const res = await fetchJSON('/admin/api/refresh');
+    showToast('数据已刷新: ' + res.total_poems + ' 首诗歌, ' + res.total_images + ' 条意象');
+    loadStatus(); loadStats();
+  } catch (e) { showToast('刷新失败: ' + e.message, true); }
+}
+
+async function exportData(fmt) {
+  try {
+    const res = await fetch('/admin/api/exports', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: fmt }) });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, true); return; }
+    showToast('导出成功: ' + data.file + ' (' + (data.size / 1024).toFixed(1) + ' KB)');
+    loadExports();
+  } catch (e) { showToast('导出失败: ' + e.message, true); }
+}
+
+async function clearCache() {
+  try {
+    const res = await fetch('/admin/api/cache/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'all' }) });
+    const data = await res.json();
+    showToast(data.message); loadStatus();
+  } catch (e) { showToast('清理失败: ' + e.message, true); }
+}
+
+async function clearExports() {
+  if (!confirm('确定要清空所有导出文件吗？')) return;
+  try {
+    const res = await fetch('/admin/api/exports/clear', { method: 'POST' });
+    const data = await res.json();
+    showToast(data.message); loadExports();
+  } catch (e) { showToast('清空失败: ' + e.message, true); }
+}
+
+async function scanData() {
+  const el = document.getElementById('task-result'); el.style.display = 'block'; el.innerHTML = '正在扫描数据目录...';
+  try {
+    const data = await fetchJSON('/admin/api/scan');
+    var html = '📁 数据目录: ' + data.file_count + ' 个文件, ' + data.total_poems + ' 首诗歌, ' + data.total_units + ' 个分析单元\n\n';
+    html += data.files.map(function(f){
+      var err = f.error ? ' [错误: ' + f.error + ']' : '';
+      return '  ' + f.name.padEnd(36) + '  ' + String(f.size_kb).padStart(8) + ' KB  ' + String(f.poems).padStart(3) + ' 首  ' + String(f.units).padStart(4) + ' 单元' + err;
+    }).join('\n');
+    el.innerHTML = html;
+  } catch (e) { el.innerHTML = '❌ 扫描失败: ' + e.message; }
+}
+
+async function checkRag() {
+  const el = document.getElementById('task-result'); el.style.display = 'block'; el.innerHTML = '正在检查向量库...';
+  try {
+    const data = await fetchJSON('/admin/api/rag/check');
+    if (!data.exists) { el.innerHTML = '⚠️ 向量库不存在，请先构建。'; return; }
+    var html = '📦 向量库状态\n  路径: ' + data.path + '\n  集合: ' + data.collection + '\n  向量数: ' + data.vector_count + '\n  示例文档:\n';
+    if (data.samples && data.samples.length) {
+      data.samples.forEach(function(s, i){ html += '    [' + (i+1) + '] 《' + s.title + '》' + s.author + ' (' + s.length + '字)\n'; });
+    }
+    if (data.error) html += '\n  错误: ' + data.error + '\n';
+    el.innerHTML = html;
+  } catch (e) { el.innerHTML = '❌ 检查向量库失败: ' + e.message; }
+}
+
+async function buildRag() {
+  const el = document.getElementById('task-result'); el.style.display = 'block'; el.innerHTML = '🏗️ 正在启动向量库构建任务（后台运行）...';
+  try {
+    const data = await (await fetch('/admin/api/rag/build', { method: 'POST' })).json();
+    el.innerHTML = '✅ ' + data.message + '\n任务 ID: ' + data.task_id + '\n\n⏳ 正在轮询任务状态...';
+    pollTask(data.task_id, el);
+  } catch (e) { el.innerHTML = '❌ 启动构建失败: ' + e.message; }
+}
+
+async function runTests() {
+  const el = document.getElementById('task-result'); el.style.display = 'block'; el.innerHTML = '🧪 正在启动单元测试（后台运行）...';
+  try {
+    const data = await (await fetch('/admin/api/test', { method: 'POST' })).json();
+    el.innerHTML = '✅ ' + data.message + '\n任务 ID: ' + data.task_id + '\n\n⏳ 正在轮询任务状态...';
+    pollTask(data.task_id, el);
+  } catch (e) { el.innerHTML = '❌ 启动测试失败: ' + e.message; }
+}
+
+async function pollTask(taskId, el, retries) {
+  retries = retries || 0;
+  if (retries > 120) { el.innerHTML += '\n⏰ 轮询超时，请手动检查。'; return; }
+  try {
+    const data = await fetchJSON('/admin/api/tasks/' + taskId);
+    if (data.status === 'running') { el.innerHTML += '\n.'; setTimeout(function(){ pollTask(taskId, el, retries + 1); }, 2000); }
+    else if (data.status === 'done') {
+      var output = '✅ 任务完成\n';
+      if (data.result.output) output += '\n--- 输出 ---\n' + data.result.output;
+      if (data.result.passed !== undefined) output += data.result.passed ? '\n✅ 测试全部通过' : '\n❌ 部分测试失败';
+      if (data.result.returncode !== undefined) output += '\n返回码: ' + data.result.returncode;
+      if (data.result.error) output += '\n错误: ' + data.result.error;
+      el.innerHTML = output;
+    } else if (data.status === 'error') { el.innerHTML += '\n❌ 任务执行失败: ' + (data.error || '未知错误'); }
+  } catch (e) { el.innerHTML += '\n⚠️ 轮询失败: ' + e.message; setTimeout(function(){ pollTask(taskId, el, retries + 1); }, 3000); }
+}
+
+loadStatus(); loadStats(); loadExports();
+</script>
+{% endblock %}

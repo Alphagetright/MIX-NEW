@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}回收站 — 唐诗意象智能分析系统{% endblock %}
+{% block nav_graph %}active{% endblock %}
+{% block nav_graph_open %}open{% endblock %}
+{% block nav_graph_sub %}open{% endblock %}
+{% block breadcrumb %}<span>数据图谱</span> · 回收站管理{% endblock %}
+
+{% block head_extra %}
+<style>
+  .table-wrapper { max-height: 62vh; overflow: auto; border: 1px solid #eee; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border: 1px solid #eee; padding: 10px 12px; text-align: left; }
+  th { background: #fafafa; font-weight: 600; position: sticky; top: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">已删除意象回收站</h2>
+    <span style="font-size:13px;color:#999;">共 <b id="recycle-count">0</b> 条已删除记录</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th style="width:12%;">编号</th><th style="width:15%;">被删意象</th><th style="width:30%;">所属诗歌</th><th style="width:25%;">大类归属</th><th style="width:18%;">操作</th></tr>
+      </thead>
+      <tbody id="recycle-body">
+        <tr><td colspan="5" style="text-align:center;padding:24px;color:#999;">加载中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:16px;">
+    <button class="btn-action" onclick="emptyAll()">🗑️ 清空回收站</button>
+    <a href="/graph" style="margin-left:12px;font-size:13px;color:#3498db;">← 返回数据图谱</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadRecycle() {
+  try {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+    const allData = data.traceback || [];
+    // Recycle data is managed client-side; in production this would come from server
+    // For now, show empty state
+    document.getElementById('recycle-body').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#999;">回收站为空（删除操作请在数据图谱页面进行）</td></tr>';
+    document.getElementById('recycle-count').innerText = '0';
+  } catch(e) {
+    document.getElementById('recycle-body').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#e74c3c;">加载失败</td></tr>';
+  }
+}
+
+function emptyAll() {
+  if (confirm('确定要清空所有回收站记录吗？此操作不可恢复。')) {
+    document.getElementById('recycle-body').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#999;">回收站为空</td></tr>';
+    document.getElementById('recycle-count').innerText = '0';
+  }
+}
+
+loadRecycle();
+</script>
+{% endblock %}

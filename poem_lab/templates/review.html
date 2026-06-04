@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}审核确认 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<h1>审核确认</h1>
+<p class="subtitle">检查 AI 生成的标注方案，确认后进入批量运行</p>
+
+<div id="no-data" class="card">
+    <p>尚未生成标注方案，请先到 <a href="/schema">方案设计</a> 页面完成设计。</p>
+</div>
+
+<div id="review-content" style="display:none">
+    <!-- 生成的提示词 -->
+    <div class="card">
+        <h2>生成的标注提示词</h2>
+        <p class="hint">AI 根据你的表头反向设计的 System Prompt，可编辑调整</p>
+        <textarea id="generated-prompt" rows="16"></textarea>
+    </div>
+
+    <!-- 列映射 -->
+    <div class="card">
+        <h2>列映射</h2>
+        <div class="table-wrap">
+            <table class="data-table" id="mapping-table">
+                <thead><tr><th>表头</th><th>字段名</th><th>分析维度</th><th>数据类型</th><th>枚举值</th><th>校验规则</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 示例数据 -->
+    <div class="card">
+        <h2>示例数据</h2>
+        <div id="sample-row"></div>
+        <div id="sample-validation"></div>
+        <p class="hint"><strong>方案说明：</strong><span id="analysis-notes"></span></p>
+        <p class="hint"><strong>估计 Token/首：</strong><span id="est-tokens"></span></p>
+    </div>
+
+    <!-- 质量检查 -->
+    <div class="card">
+        <h2>试跑质量检查</h2>
+        <button class="btn btn-primary" id="btn-quality" onclick="runQualityCheck()">运行试跑（前5首）</button>
+        <div id="quality-result" style="display:none; margin-top:12px;"></div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="card" style="text-align:center">
+        <button class="btn btn-primary btn-lg" onclick="saveAndProceed()">确认方案，开始批量运行</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let schemaData = null;
+
+// 页面加载时检查 session 中是否有 schema_result
+window.onload = function() {
+    // 尝试从 sessionStorage 加载
+    const cached = sessionStorage.getItem('schema_result');
+    if (cached) {
+        schemaData = JSON.parse(cached);
+        renderReview(schemaData);
+    }
+};
+
+function renderReview(data) {
+    document.getElementById('no-data').style.display = 'none';
+    document.getElementById('review-content').style.display = '';
+
+    document.getElementById('generated-prompt').value = data.generated_prompt || '';
+
+    const mappingTbody = document.querySelector('#mapping-table tbody');
+    mappingTbody.innerHTML = (data.column_mapping || []).map(c => `
+        <tr>
+            <td>${c.header || ''}</td>
+            <td><code>${c.field || ''}</code></td>
+            <td>${c.dimension || ''}</td>
+            <td>${c.data_type || 'string'}</td>
+            <td>${(c.enum_values || []).join(', ') || '-'}</td>
+            <td>${c.validation || ''}</td>
+        </tr>`).join('');
+
+    const sr = data.sample_row || {};
+    document.getElementById('sample-row').innerHTML = '<pre>' + JSON.stringify(sr, null, 2) + '</pre>';
+
+    const sv = data.sample_validation || {};
+    const svEl = document.getElementById('sample-validation');
+    svEl.innerHTML = sv.ok
+        ? '<p style="color:green">示例数据校验通过</p>'
+        : '<p style="color:red">校验问题：' + (sv.issues||[]).join('; ') + '</p>';
+
+    document.getElementById('analysis-notes').textContent = data.analysis_notes || '';
+    document.getElementById('est-tokens').textContent = data.estimated_tokens_per_poem || '';
+}
+
+function runQualityCheck() {
+    const btn = document.getElementById('btn-quality');
+    btn.disabled = true; btn.textContent = '试跑中...';
+
+    const generatedPrompt = document.getElementById('generated-prompt').value;
+
+    fetch('/api/quality-check', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            generated_prompt: generatedPrompt,
+            column_mapping: schemaData.column_mapping || []
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        btn.disabled = false; btn.textContent = '重新试跑';
+        const el = document.getElementById('quality-result');
+        el.style.display = '';
+        if (d.ok && d.data) {
+            const q = d.data;
+            el.innerHTML = `
+                <div class="quality-card">
+                    <p><strong>总体质量评分：</strong><span class="score">${q.overall_score || '?'} / 100</span></p>
+                    <p><strong>成功率：</strong>${q.success_rate || '?'}</p>
+                    <p><strong>是否可批量：</strong>${q.ready_for_batch ? '✅ 可以' : '❌ 建议调整'}</p>
+                    <p><strong>主要问题：</strong></p><ul>${(q.top_issues||[]).map(i => '<li>'+i+'</li>').join('')}</ul>
+                    <p><strong>建议：</strong>${q.recommendation || ''}</p>
+                    ${q.column_quality ? `
+                        <table class="data-table" style="margin-top:8px">
+                            <thead><tr><th>列名</th><th>合规率</th><th>问题</th></tr></thead>
+                            <tbody>${q.column_quality.map(c => `<tr><td>${c.header}</td><td>${c.compliance}%</td><td>${c.issues||'-'}</td></tr>`).join('')}</tbody>
+                        </table>` : ''}
+                </div>`;
+        } else {
+            el.innerHTML = '<p style="color:red">质量检查失败：' + (d.error||'未知错误') + '</p>';
+        }
+        el.scrollIntoView({behavior:'smooth'});
+    });
+}
+
+function saveAndProceed() {
+    const generatedPrompt = document.getElementById('generated-prompt').value;
+    schemaData.generated_prompt = generatedPrompt;
+    sessionStorage.setItem('schema_result', JSON.stringify(schemaData));
+    window.location.href = '/run';
+}
+</script>
+{% endblock %}

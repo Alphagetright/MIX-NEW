@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}登录 — 古典诗歌文本结构化标注生产系统{% endblock %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 60px auto;">
+    <h1 style="text-align:center; font-size: 22px;">登录</h1>
+    <p style="text-align:center; color: var(--text-secondary); margin-bottom: 24px;">古典诗歌文本结构化标注生产系统</p>
+
+    <div class="card" style="padding: 24px;">
+        <div id="login-error" style="color: #b33a3a; font-size: 13px; margin-bottom: 12px; display: none;"></div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">用户名</label>
+            <input type="text" id="login-username" placeholder="请输入用户名" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius: var(--radius); font-size:14px; font-family:inherit;" autocomplete="username">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">密码</label>
+            <input type="password" id="login-password" placeholder="请输入密码" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius: var(--radius); font-size:14px; font-family:inherit;" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+
+        <button class="btn btn-primary" onclick="doLogin()" style="width:100%; padding:10px; font-size:15px;">登 录</button>
+
+        <p style="text-align:center; margin-top: 16px; font-size: 13px; color: var(--text-secondary);">
+            还没有账号？<a href="/register" style="color: var(--accent);">注册</a>
+        </p>
+        <p style="text-align:center; font-size: 11px; color: #aaa; margin-top: 8px;">
+            默认管理员: admin / poemlab2026
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function doLogin() {
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+
+    if (!username || !password) {
+        errEl.textContent = '请填写用户名和密码';
+        errEl.style.display = '';
+        return;
+    }
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password})
+    }).then(r => r.json()).then(d => {
+        if (d.ok) {
+            window.location.href = '/';
+        } else {
+            errEl.textContent = d.error || '登录失败';
+            errEl.style.display = '';
+        }
+    });
+}
+</script>
+{% endblock %}

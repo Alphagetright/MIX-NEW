@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - CLI运维管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', '宋体', sans-serif; background: #0d1117; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .register-box { background: #161b22; border-radius: 12px; padding: 40px; width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid #30363d; }
+        .register-box h1 { font-size: 22px; color: #e6edf3; text-align: center; margin-bottom: 6px; }
+        .register-box .subtitle { font-size: 13px; color: #8b949e; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; color: #c9d1d9; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 10px 14px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #e6edf3; font-size: 14px; outline: none; transition: border 0.2s; }
+        .form-group input:focus { border-color: #58a6ff; }
+        .btn-register { width: 100%; padding: 10px; background: #238636; color: #fff; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; transition: background 0.2s; }
+        .btn-register:hover { background: #2ea043; }
+        .error { background: #3d1114; color: #f85149; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 18px; text-align: center; border: 1px solid #3d1114; }
+        .login-link { text-align: center; margin-top: 18px; font-size: 13px; color: #8b949e; }
+        .login-link a { color: #58a6ff; text-decoration: none; }
+        .login-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h1>创建账号</h1>
+        <div class="subtitle">注册后即可使用 CLI 运维管理功能</div>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="设置用户名" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="设置密码" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm">确认密码</label>
+                <input type="password" id="confirm" name="confirm" placeholder="再次输入密码" required>
+            </div>
+            <button type="submit" class="btn-register">注 册</button>
+        </form>
+        <div class="login-link">
+            已有账号？<a href="{{ url_for('login') }}">立即登录</a>
+        </div>
+    </div>
+</body>
+</html>

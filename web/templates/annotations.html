@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标注结果 - 诗歌标注生产系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', '宋体', sans-serif; background: #f0f2f5; min-height: 100vh; }
+        .navbar { background: #1a1a2e; color: #fff; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .navbar .logo { font-size: 18px; font-weight: bold; }
+        .navbar .nav-links a { color: #ccc; text-decoration: none; font-size: 14px; margin-left: 20px; }
+        .navbar .nav-links a:hover { color: #fff; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        h2 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
+        .poem-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .poem-header { background: linear-gradient(135deg, #0f3460, #1a4a7a); padding: 25px 30px; color: #fff; }
+        .poem-header h3 { font-size: 22px; margin-bottom: 4px; }
+        .poem-header .meta { font-size: 13px; color: #b0c4de; }
+        .poem-body { padding: 25px 30px; font-size: 16px; line-height: 2; color: #333; letter-spacing: 1px; }
+        .poem-body .verse { padding: 4px 0; }
+        .annotation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 30px 25px; }
+        .anno-card { background: #f8f9fa; border-radius: 8px; padding: 16px; }
+        .anno-card h4 { font-size: 13px; color: #888; margin-bottom: 8px; }
+        .anno-card .tag { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; margin: 2px; }
+        .tag-blue { background: #e3f2fd; color: #1565c0; }
+        .tag-green { background: #e8f5e9; color: #2e7d32; }
+        .tag-orange { background: #fff3e0; color: #e65100; }
+        .tag-purple { background: #f3e5f5; color: #7b1fa2; }
+        .score-bar { margin: 4px 0; display: flex; align-items: center; gap: 8px; }
+        .score-bar .bar { flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+        .score-bar .fill { height: 100%; border-radius: 3px; }
+        .score-bar .val { font-size: 12px; color: #555; min-width: 30px; }
+        .section { background: #fff; border-radius: 10px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .section h3 { font-size: 16px; color: #1a1a2e; margin-bottom: 12px; }
+        .json-box { background: #1e1e1e; color: #d4d4d4; border-radius: 8px; padding: 20px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.6; overflow-x: auto; }
+        .json-key { color: #9cdcfe; }
+        .json-string { color: #ce9178; }
+        .json-number { color: #b5cea8; }
+        .json-bool { color: #569cd6; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">📜 诗歌标注平台</div>
+        <div class="nav-links">
+            <a href="/home">主页</a>
+            <a href="/dashboard">控制台</a>
+            <a href="/annotations">标注结果</a>
+            <a href="/logout">退出</a>
+        </div>
+    </div>
+    <div class="container">
+        <h2>标注结果详情 — 静夜思</h2>
+        <div class="poem-card">
+            <div class="poem-header">
+                <h3>静夜思</h3>
+                <div class="meta">李白 · 五言绝句 · 运行ID: run_20260520_143022</div>
+            </div>
+            <div class="poem-body">
+                {% for verse in poem.verses %}
+                <div class="verse">{{ verse.text }}</div>
+                {% endfor %}
+            </div>
+            <div class="annotation-grid">
+                <div class="anno-card">
+                    <h4>🎨 意象分析</h4>
+                    {% for item in annotations.imagery %}
+                    <span class="tag tag-blue">{{ item.word }} ({{ item.intensity }})</span>
+                    {% endfor %}
+                </div>
+                <div class="anno-card">
+                    <h4>💭 情感分析</h4>
+                    <div>情感: <strong>{{ annotations.emotion.sentiment }}</strong></div>
+                    <div class="score-bar">
+                        <span>强度</span>
+                        <div class="bar"><div class="fill" style="width:{{ annotations.emotion.intensity * 100 }}%;background:#e65100"></div></div>
+                        <span class="val">{{ annotations.emotion.intensity }}</span>
+                    </div>
+                </div>
+                <div class="anno-card">
+                    <h4>📐 结构分析</h4>
+                    <div>体裁: <strong>{{ annotations.structure.pattern }}</strong></div>
+                    <div>用韵: {{ annotations.structure.rhyme }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h3>质量评分</h3>
+            <div class="score-bar">
+                <span>完整度</span>
+                <div class="bar"><div class="fill" style="width:100%;background:#2e7d32"></div></div>
+                <span class="val">{{ quality.completeness }}</span>
+            </div>
+            <div class="score-bar">
+                <span>置信度</span>
+                <div class="bar"><div class="fill" style="width:94%;background:#1565c0"></div></div>
+                <span class="val">{{ quality.confidence }}</span>
+            </div>
+        </div>
+        <div class="section">
+            <h3>原始输出数据 (JSON)</h3>
+            <div class="json-box">{{ json_data }}</div>
+        </div>
+    </div>
+</body>
+</html>
