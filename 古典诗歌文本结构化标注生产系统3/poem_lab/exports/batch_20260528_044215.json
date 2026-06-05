@@ -1,0 +1,55 @@
+{
+  "results": [
+    {
+      "编号": "P001",
+      "标题": "静夜思",
+      "作者": "李白",
+      "分析结果": {
+        "natural_imagery": "moon, frost",
+        "emotional_tendency": "negative",
+        "rhetorical_devices": "metaphor, parallelism"
+      }
+    },
+    {
+      "编号": "P002",
+      "标题": "望庐山瀑布",
+      "作者": "李白",
+      "分析结果": {
+        "natural_imagery": "sun, purple smoke, waterfall, galaxy",
+        "emotional_tendency": "positive",
+        "rhetorical_devices": "hyperbole, metaphor"
+      }
+    }
+  ],
+  "column_mapping": [
+    {
+      "data_type": "string",
+      "dimension": "imagery_extraction",
+      "enum_values": [],
+      "field": "natural_imagery",
+      "header": "自然意象",
+      "validation": "逗号分隔的英文物象名称列表，每个词首字母小写"
+    },
+    {
+      "data_type": "enum",
+      "dimension": "sentiment_analysis",
+      "enum_values": [
+        "positive",
+        "negative",
+        "mixed",
+        "neutral"
+      ],
+      "field": "emotional_tendency",
+      "header": "情感倾向",
+      "validation": "必须为枚举值之一"
+    },
+    {
+      "data_type": "string",
+      "dimension": "rhetoric_detection",
+      "enum_values": [],
+      "field": "rhetorical_devices",
+      "header": "修辞手法",
+      "validation": "逗号分隔的英文修辞格名称，枚举值：metaphor, personification, parallelism, allusion, hyperbole, synesthesia, contrast"
+    }
+  ]
+}

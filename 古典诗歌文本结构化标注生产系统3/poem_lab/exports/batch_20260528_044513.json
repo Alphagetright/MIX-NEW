@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "编号": "P001",
+      "标题": "静夜思",
+      "作者": "李白",
+      "分析结果": {
+        "natural_imagery": "明月光,霜",
+        "emotion_tendency": "思乡",
+        "rhetorical_devices": "比喻,对偶"
+      }
+    },
+    {
+      "编号": "P002",
+      "标题": "望庐山瀑布",
+      "作者": "李白",
+      "分析结果": {
+        "natural_imagery": "日照,香炉峰,紫烟,瀑布,银河",
+        "emotion_tendency": "豪迈",
+        "rhetorical_devices": "比喻,夸张,拟人"
+      }
+    }
+  ],
+  "column_mapping": [
+    {
+      "data_type": "string",
+      "dimension": "意象识别",
+      "enum_values": [],
+      "field": "natural_imagery",
+      "header": "自然意象",
+      "validation": "只包含自然景物名词，多个用逗号分隔"
+    },
+    {
+      "data_type": "enum",
+      "dimension": "情感分析",
+      "enum_values": [
+        "喜悦",
+        "悲伤",
+        "思乡",
+        "爱国",
+        "闲适",
+        "孤寂",
+        "豪迈",
+        "惆怅",
+        "恬淡",
+        "忧愤"
+      ],
+      "field": "emotion_tendency",
+      "header": "情感倾向",
+      "validation": "必须从枚举值中选择一个"
+    },
+    {
+      "data_type": "string",
+      "dimension": "修辞检测",
+      "enum_values": [],
+      "field": "rhetorical_devices",
+      "header": "修辞手法",
+      "validation": "只包含修辞手法名称，多个用逗号分隔"
+    }
+  ]
+}

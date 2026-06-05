@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: tang-cli-ops
+Version: 1.0.0
+Summary: 唐诗意象数据运维管理系统 — CLI Operations Toolkit
+Author: 唐诗意象数据分析团队
+License: MIT
+Requires-Python: >=3.10

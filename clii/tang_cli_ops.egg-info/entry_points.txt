@@ -1,0 +1,2 @@
+[console_scripts]
+tang-cli = cli_ops.cli_main:main
