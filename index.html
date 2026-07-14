@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smith Flash — LLM Application Developer</title>
+<title>SMITH FLASH — LLM 应用开发</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
     background: #09090b;
     color: #e4e4e7;
     line-height: 1.6;
@@ -19,7 +19,6 @@
 
   .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
 
-  /* Nav */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     background: rgba(9,9,11,0.85); backdrop-filter: blur(12px);
@@ -31,10 +30,8 @@
   nav .links a { color: #a1a1aa; }
   nav .links a:hover { color: #fafafa; }
 
-  /* Sections */
   section { padding: 80px 0; }
 
-  /* Hero */
   .hero { padding: 140px 0 80px; }
   .hero h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; color: #fafafa; line-height: 1.1; }
   .hero .subtitle { font-size: 20px; color: #a1a1aa; margin-top: 16px; max-width: 600px; }
@@ -45,11 +42,9 @@
   }
   .hero .links-row { display: flex; gap: 16px; margin-top: 28px; font-size: 14px; }
 
-  /* Section titles */
-  .section-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #818cf8; margin-bottom: 8px; }
+  .section-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #818cf8; margin-bottom: 8px; }
   .section-title { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: #fafafa; margin-bottom: 40px; }
 
-  /* Project cards */
   .projects-grid { display: flex; flex-direction: column; gap: 32px; }
   .project-card {
     border: 1px solid #1f1f23; border-radius: 12px; background: #0d0d10;
@@ -73,7 +68,6 @@
   .project-card .card-media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: #1f1f23; }
   .project-card .card-media-grid img { width: 100%; display: block; object-fit: cover; aspect-ratio: 16/10; }
 
-  /* Code block for project 4 */
   .code-snippet {
     background: #0a0a0b; border: 1px solid #1f1f23; border-radius: 8px;
     padding: 20px 24px; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
@@ -84,21 +78,18 @@
   .code-snippet .arrow { color: #818cf8; }
   .code-snippet .comment { color: #52525b; }
 
-  /* Skills */
   .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
   .skill-cat { border: 1px solid #1f1f23; border-radius: 10px; padding: 24px; background: #0d0d10; }
-  .skill-cat h4 { font-size: 14px; font-weight: 600; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .skill-cat h4 { font-size: 14px; font-weight: 600; color: #818cf8; margin-bottom: 12px; }
   .skill-cat .skill-list { display: flex; flex-wrap: wrap; gap: 6px; }
   .skill-cat .skill-list span {
     padding: 4px 10px; border-radius: 4px; font-size: 13px;
     background: #18181b; color: #d4d4d8;
   }
 
-  /* About */
   .about-text { font-size: 16px; color: #a1a1aa; max-width: 640px; line-height: 1.8; }
   .about-text strong { color: #e4e4e7; }
 
-  /* Footer */
   footer { border-top: 1px solid #1f1f23; padding: 32px 0; }
   footer .container { display: flex; justify-content: space-between; font-size: 13px; color: #52525b; }
 
@@ -117,11 +108,11 @@
 
 <nav>
   <div class="container">
-    <span class="logo">SF</span>
+    <span class="logo">SMITH FLASH</span>
     <div class="links">
-      <a href="#projects">Projects</a>
-      <a href="#skills">Skills</a>
-      <a href="#about">About</a>
+      <a href="#projects">项目</a>
+      <a href="#skills">技能</a>
+      <a href="#about">关于</a>
     </div>
   </div>
 </nav>
@@ -129,8 +120,8 @@
 <!-- Hero -->
 <section class="hero">
   <div class="container">
-    <h1>Smith Flash</h1>
-    <p class="subtitle">LLM Application Developer — building production pipelines from data ingestion to LLM inference to user-facing applications.</p>
+    <h1>SMITH FLASH</h1>
+    <p class="subtitle">LLM 应用开发 — 从数据管道到 LLM 推理到应用交付，全链路独立闭环。</p>
     <div class="tags">
       <span class="tag">Python</span>
       <span class="tag">LLM</span>
@@ -140,7 +131,7 @@
       <span class="tag">Pipeline</span>
       <span class="tag">Flask</span>
       <span class="tag">SQLite</span>
-      <span class="tag">Data Processing</span>
+      <span class="tag">数据处理</span>
     </div>
     <div class="links-row">
       <a href="https://github.com/Alphagetright/MIX-NEW" target="_blank">GitHub →</a>
@@ -151,109 +142,109 @@
 <!-- Projects -->
 <section id="projects">
   <div class="container">
-    <div class="section-label">Projects</div>
-    <div class="section-title">What I've Built</div>
+    <div class="section-label">项目</div>
+    <div class="section-title">做过的东西</div>
 
     <div class="projects-grid">
 
-      <!-- Project 1: Poetry Analysis System -->
+      <!-- 项目1 -->
       <div class="project-card">
         <div class="card-body">
-          <h3>Classical Poetry Imagery Analysis System</h3>
-          <p class="project-role">Full-Stack Web App + RAG Pipeline + Prosody Engine</p>
+          <h3>古典诗歌意象分析系统</h3>
+          <p class="project-role">全栈 Web 应用 + RAG 检索 + 格律分析引擎</p>
           <p class="project-desc">
-            An end-to-end system that ingests raw classical Chinese poetry text, runs it through a chained analysis pipeline (parsing → prosody checking → imagery extraction → vector embedding), and surfaces results in an interactive Flask dashboard with ECharts visualization and LLM-powered Q&amp;A.
+            从原始诗歌文本到交互式可视化看板的完整系统。Pipeline 链式编排：文本解析 → 格律校验（平仄/押韵/对仗）→ 意象提取 → ChromaDB 向量嵌入 → RAG 问答。Flask 后端 + ECharts 前端，支持 LLM 自然语言查询诗歌数据。格律引擎 17 个模块纯标准库实现，覆盖平水韵 106 韵部，零外部依赖。
           </p>
           <div class="project-stack">
             <span>Python</span><span>Flask</span><span>ChromaDB</span><span>RAG</span><span>ECharts</span><span>Jinja2</span><span>LM Studio</span>
           </div>
           <div class="project-metrics">
-            <span><strong>1,336</strong> poems analyzed</span>
-            <span><strong>12,738</strong> analysis units</span>
-            <span><strong>4,896</strong> imagery items</span>
-            <span><strong>106</strong> rhyme categories (zero-dependency engine)</span>
-            <span><strong>17</strong> prosody modules, stdlib only</span>
+            <span><strong>1,336</strong> 首杜甫诗逐一分析</span>
+            <span><strong>12,738</strong> 个分析单元</span>
+            <span><strong>4,896</strong> 条意象标注</span>
+            <span><strong>106</strong> 韵部纯标准库实现</span>
+            <span><strong>17</strong> 模块格律引擎</span>
           </div>
         </div>
         <div class="card-media">
-          <img src="分析系统/assets/webapp/3_dashboard.png" alt="Dashboard" loading="lazy">
+          <img src="分析系统/assets/webapp/3_dashboard.png" alt="系统看板" loading="lazy">
         </div>
       </div>
 
-      <!-- Project 2: Poem Lab -->
+      <!-- 项目2 -->
       <div class="project-card">
         <div class="card-body">
-          <h3>Poem Lab — LLM Annotation Engine</h3>
-          <p class="project-role">Three-Phase Meta-Prompting Pipeline + Batch Processing</p>
+          <h3>Poem Lab — LLM 自动化标注引擎</h3>
+          <p class="project-role">三段式 Meta-Prompting + 并行批处理 + 断点续传</p>
           <p class="project-desc">
-            A production-grade annotation system that takes natural language requirements, auto-designs a labeling schema, generates specialized prompts, and coordinates parallel LLM calls to produce structured outputs. Features checkpoint/resume, quality scoring, and SSE-based progress streaming.
+            用户用自然语言描述标注需求，系统自动设计 Schema、生成专用提示词、并行调用 LLM 批量产出结构化数据。核心创新：三段式 meta-prompting（需求解析 → Schema 设计 → 质量校验），不是手写 prompt，是让 LLM 自己设计 prompt。支持 ThreadPoolExecutor 并行、checkpoint 断点续传、SSE 流式推送进度、三维质量评分（完整性/合规性/一致性）。
           </p>
           <div class="project-stack">
             <span>Python</span><span>Flask</span><span>SQLite</span><span>ThreadPoolExecutor</span><span>SSE</span><span>Meta-Prompting</span><span>LM Studio</span>
           </div>
           <div class="project-metrics">
-            <span><strong>55</strong> API routes</span>
-            <span><strong>3-phase</strong> meta-prompting pipeline</span>
-            <span><strong>12</strong> annotation prompt templates</span>
-            <span><strong>5-worker</strong> parallel batch executor</span>
-            <span><strong>Checkpoint</strong> resume support</span>
+            <span><strong>55</strong> 个 API 路由</span>
+            <span><strong>3 段</strong> meta-prompting 流水线</span>
+            <span><strong>12</strong> 套标注提示词模板</span>
+            <span><strong>5 并发</strong> 批处理执行器</span>
+            <span><strong>断点续传</strong> + 质量评分</span>
           </div>
         </div>
         <div class="card-media-grid">
-          <img src="分析系统/assets/webapp/8_ai.png" alt="AI Interface" loading="lazy">
-          <img src="分析系统/assets/stats_viz/01_dashboard.png" alt="Stats Dashboard" loading="lazy">
+          <img src="分析系统/assets/webapp/8_ai.png" alt="AI 问答界面" loading="lazy">
+          <img src="分析系统/assets/stats_viz/01_dashboard.png" alt="统计分析看板" loading="lazy">
         </div>
       </div>
 
-      <!-- Project 3: TangCLI -->
+      <!-- 项目3 -->
       <div class="project-card">
         <div class="card-body">
-          <h3>TangCLI — Agent-Driven Operations Toolkit</h3>
-          <p class="project-role">CLI + Agent Loop + Tool Registry + Web Dashboard</p>
+          <h3>TangCLI — Agent 驱动运维工具</h3>
+          <p class="project-role">CLI + Agent Loop + Tool Registry + Web 控制台</p>
           <p class="project-desc">
-            A natural-language-driven CLI for managing poetry data operations. Uses an Agent Loop pattern: user intent → LLM reasoning → function-calling tool selection → execution. Includes 15 subcommands, an interactive REPL mode, and a Flask-based web dashboard for remote monitoring. Packaged as a standalone executable via PyInstaller.
+            自然语言驱动的数据运维命令行工具。核心架构：Agent Loop（用户意图 → LLM 推理 → function-calling 工具选择 → 执行 → 结果反馈）+ Tool Registry（14 个工具封装为 OpenAI function-calling schema）。15 个子命令，交互式 REPL 模式，Flask Web 控制台远程管理。PyInstaller 打包为独立 EXE，拿到一台新电脑直接跑。
           </p>
           <div class="project-stack">
             <span>Python</span><span>Agent Loop</span><span>Function Calling</span><span>Tool Registry</span><span>REPL</span><span>PyInstaller</span><span>Flask</span>
           </div>
           <div class="project-metrics">
-            <span><strong>28</strong> modules</span>
-            <span><strong>15</strong> subcommands</span>
-            <span><strong>14</strong> registered tools</span>
-            <span><strong>3-tier</strong> architecture (infra / orchestration / business)</span>
+            <span><strong>28</strong> 个模块</span>
+            <span><strong>15</strong> 个子命令</span>
+            <span><strong>14</strong> 个注册工具</span>
+            <span><strong>3 层</strong> 架构（基础设施 / 编排 / 业务）</span>
           </div>
         </div>
         <div class="card-media-grid">
-          <img src="分析系统/assets/cli_ops/01_help.png" alt="CLI Help" loading="lazy">
-          <img src="分析系统/assets/cli_ops/04_health.png" alt="Health Check" loading="lazy">
+          <img src="分析系统/assets/cli_ops/01_help.png" alt="CLI 帮助" loading="lazy">
+          <img src="分析系统/assets/cli_ops/04_health.png" alt="健康检查" loading="lazy">
         </div>
       </div>
 
-      <!-- Project 4: AI Dev Workflow Engine -->
+      <!-- 项目4 -->
       <div class="project-card">
         <div class="card-body">
-          <h3>AI-Assisted Development Workflow Engine</h3>
-          <p class="project-role">Agent Memory System + Change Tracking + Skill Orchestration</p>
+          <h3>AI 辅助开发工作流引擎</h3>
+          <p class="project-role">Agent 记忆系统 + 变更追踪 + Skill 编排</p>
           <p class="project-desc">
-            A meta-tool built on LLM Agent infrastructure that captures every code change, persists project knowledge across sessions, and maintains a dual-track iteration log (code changes + strategic thinking). Includes 9 custom skills packaged as a standardized plugin marketplace — transforming the AI from a one-shot tool into a continuously accumulating development partner.
+            基于 LLM Agent 基础设施构建的元工具。Hook 自动捕获每次代码变更，跨会话持久化项目知识，维护双轨迭代日志（代码变更 + 战略思考）。9 个自定义 Skill 标准化打包为插件市场。把 AI 从一次性对话工具变成持续积累的开发伙伴——每次对话都在上一次的基础上进化，不是每次都从零开始。
           </p>
           <div class="project-stack">
-            <span>Agent SDK</span><span>Hooks</span><span>JSONL</span><span>YAML</span><span>Plugin System</span><span>Workflow Design</span>
+            <span>Agent SDK</span><span>Hooks</span><span>JSONL</span><span>YAML</span><span>插件系统</span><span>工作流设计</span>
           </div>
           <div class="project-metrics">
-            <span><strong>5</strong> hook-triggered automations</span>
-            <span><strong>9</strong> custom skills (3 plugin groups)</span>
-            <span><strong>Dual-track</strong> iteration log</span>
-            <span><strong>Auto</strong> stale detection</span>
+            <span><strong>5</strong> 个 Hook 自动化触发</span>
+            <span><strong>9</strong> 个自定义 Skill（3 插件组）</span>
+            <span><strong>双轨</strong>迭代日志</span>
+            <span><strong>自动</strong>过期检测</span>
           </div>
           <div style="margin-top: 16px;">
             <div class="code-snippet">
-<span class="comment"># The engine's core loop</span>
-<span class="key">code change</span> → <span class="key">PostToolUse hook</span> → <span class="str">pending-changes.jsonl</span>
-                                      → <span class="key">change-log</span> → <span class="str">CHANGELOG.md</span> <span class="comment">(what)</span>
-                                      → <span class="key">change-log</span> → <span class="str">thoughts.md</span>    <span class="comment">(why)</span>
-<span class="key">session end</span> → <span class="key">Stop hook</span> → <span class="str">session.md</span> <span class="comment">(handoff snapshot)</span>
-<span class="key">new session</span> → <span class="key">launcher</span> → <span class="str">session.md</span> + <span class="str">overview.md</span> → <span class="arrow">seamless context restore</span>
+<span class="comment"># 引擎核心循环</span>
+<span class="key">代码变更</span> → <span class="key">PostToolUse hook</span> → <span class="str">pending-changes.jsonl</span>
+                                       → <span class="key">change-log</span> → <span class="str">CHANGELOG.md</span> <span class="comment">（what：做了什么）</span>
+                                       → <span class="key">change-log</span> → <span class="str">thoughts.md</span>    <span class="comment">（why：为什么这样做）</span>
+<span class="key">会话结束</span> → <span class="key">Stop hook</span> → <span class="str">session.md</span> <span class="comment">（交接快照）</span>
+<span class="key">新会话</span>   → <span class="key">launcher</span>  → <span class="str">session.md</span> + <span class="str">overview.md</span> → <span class="arrow">无缝上下文恢复</span>
             </div>
           </div>
         </div>
@@ -266,35 +257,35 @@
 <!-- Skills -->
 <section id="skills">
   <div class="container">
-    <div class="section-label">Skills</div>
-    <div class="section-title">Technical Competencies</div>
+    <div class="section-label">技能</div>
+    <div class="section-title">技术能力</div>
     <div class="skills-grid">
 
       <div class="skill-cat">
-        <h4>AI Application</h4>
+        <h4>AI 应用</h4>
         <div class="skill-list">
-          <span>LLM API Integration</span><span>Prompt Engineering</span><span>RAG Pipeline</span>
-          <span>Embedding & Vector DB</span><span>Agent Workflow Design</span>
+          <span>LLM API 集成</span><span>Prompt Engineering</span><span>RAG 流水线</span>
+          <span>Embedding / 向量数据库</span><span>Agent 工作流设计</span>
           <span>Function Calling / Tool Use</span><span>Meta-Prompting</span>
-          <span>SSE Streaming</span><span>Local LLM Deployment</span>
+          <span>SSE 流式推送</span><span>本地 LLM 部署</span>
         </div>
       </div>
 
       <div class="skill-cat">
-        <h4>Backend & Systems</h4>
+        <h4>后端 & 系统</h4>
         <div class="skill-list">
-          <span>Python</span><span>Flask</span><span>SQLite</span><span>REST API Design</span>
-          <span>CLI Development</span><span>PyInstaller Packaging</span>
-          <span>Multi-threading</span><span>Hook Systems</span>
+          <span>Python</span><span>Flask</span><span>SQLite</span><span>REST API 设计</span>
+          <span>CLI 开发</span><span>PyInstaller 打包</span>
+          <span>多线程</span><span>Hook 系统</span>
         </div>
       </div>
 
       <div class="skill-cat">
-        <h4>Data & Pipeline</h4>
+        <h4>数据 & 管线</h4>
         <div class="skill-list">
-          <span>JSON / CSV / XML</span><span>Text Cleaning</span><span>ETL Pipeline</span>
-          <span>Data Validation</span><span>Batch Processing</span>
-          <span>Checkpoint / Resume</span><span>Encoding Detection</span>
+          <span>JSON / CSV / XML</span><span>文本清洗</span><span>ETL 管道</span>
+          <span>数据校验</span><span>批量处理</span>
+          <span>断点续传</span><span>编码检测</span>
         </div>
       </div>
 
@@ -305,19 +296,19 @@
 <!-- About -->
 <section id="about">
   <div class="container">
-    <div class="section-label">About</div>
-    <div class="section-title">Who I Am</div>
+    <div class="section-label">关于</div>
+    <div class="section-title">我是谁</div>
     <div class="about-text">
-      <p>Computer Science undergraduate. Focused on <strong>LLM application development</strong> — turning raw data and natural language requirements into working, deployed systems.</p>
-      <p style="margin-top:12px;">I go from <strong>requirement analysis → data pipeline → LLM integration → application delivery</strong> independently. Not limited to any single layer of the stack.</p>
-      <p style="margin-top:12px;">Three software copyrights filed. All systems shown above are built, running, and iterated on continuously.</p>
+      <p>计算机专业本科在读。方向：<strong>LLM 应用开发</strong>——把原始数据和自然语言需求变成跑起来的系统。</p>
+      <p style="margin-top:12px;">能力范围覆盖 <strong>需求分析 → 数据处理 → LLM 集成 → 应用交付</strong> 全流程，不局限在单一技术层。</p>
+      <p style="margin-top:12px;">以上三个系统均已获得软件著作权，正在持续迭代。同时自建了 AI 辅助开发工作流，把单人产出效率拉到团队级别。</p>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <span>Smith Flash · LLM Application Developer</span>
+    <span>SMITH FLASH · LLM Application Developer</span>
     <span><a href="https://github.com/Alphagetright/MIX-NEW">GitHub</a></span>
   </div>
 </footer>

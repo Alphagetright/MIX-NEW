@@ -1,68 +1,68 @@
-# MIX-NEW — Tang Poetry AI Analysis Ecosystem
+# MIX-NEW — 唐诗 AI 分析生态系统
 
-A multi-system workspace for classical Chinese poetry analysis, structured annotation, and LLM-driven data operations. Three independent subsystems sharing a unified poetry corpus.
+古典诗歌文本结构化分析、LLM 标注生产、Agent 驱动数据运维——三个独立子系统共享统一诗歌语料库。
 
-## Portfolio
+## 作品集
 
-→ **[View Portfolio Page](https://alphagetright.github.io/MIX-NEW/)** (GitHub Pages)
+→ **[在线作品集](https://alphagetright.github.io/MIX-NEW/)**（GitHub Pages）
 
-## System Overview
+## 系统概览
 
 ```
 MIX-NEW/
-├── 分析系统/              — Poetry Imagery Analysis System (Flask + RAG + Prosody)
-├── 古典诗歌.../poem_lab/  — Poem Lab v2: LLM Annotation Engine (Meta-Prompting)
-├── clii/cli_ops/          — TangCLI: Agent-Driven Operations Toolkit (28 modules)
-└── poem_json/             — Shared poetry corpus (DBpia JSON preprocessed)
+├── 分析系统/              — 诗歌意象分析系统（Flask + RAG + 格律引擎）
+├── 古典诗歌.../poem_lab/  — Poem Lab v2：LLM 标注引擎（Meta-Prompting）
+├── clii/cli_ops/          — TangCLI：Agent 驱动运维工具（28 模块）
+└── poem_json/             — 共享诗歌语料库
 ```
 
-| System | Role | Tech Highlights |
-|--------|------|-----------------|
-| **Poetry Analysis System** | Full-stack web app for imagery analysis + visualization | Flask, ChromaDB RAG, ECharts, 17-module prosody engine (stdlib only, 106 rhyme categories) |
-| **Poem Lab v2** | Production LLM annotation pipeline | 3-phase meta-prompting, ThreadPoolExecutor, checkpoint/resume, SSE streaming, SQLite |
-| **TangCLI** | Natural-language-driven CLI ops toolkit | Agent Loop + Tool Registry, 15 subcommands, REPL mode, PyInstaller packaging |
+| 系统 | 定位 | 技术要点 |
+|------|------|----------|
+| **诗歌意象分析系统** | 全栈 Web 应用，意象分析 + 可视化 | Flask、ChromaDB RAG、ECharts、17 模块格律引擎（纯标准库，覆盖平水韵 106 韵部） |
+| **Poem Lab v2** | LLM 标注生产流水线 | 三段式 meta-prompting、ThreadPoolExecutor 并行、checkpoint 断点续传、SSE 流式推送、SQLite |
+| **TangCLI** | 自然语言驱动 CLI 运维工具 | Agent Loop + Tool Registry、15 子命令、REPL 交互模式、PyInstaller 打包 |
 
-## Scale
+## 数据规模
 
-- **1,336** Du Fu poems analyzed individually (50 MB structured JSON)
-- **313** Tang poems with **12,738** analysis units and **4,896** imagery items
-- **11 MB** main annotation dataset with 15+ dimension tags per item
-- **RAG** vector store (ChromaDB) powering LLM Q&A
+- **1,336** 首杜甫诗逐一分析（50 MB 结构化 JSON）
+- **313** 首唐诗，**12,738** 个分析单元，**4,896** 条意象标注
+- **11 MB** 主标注数据集，每条含 15+ 维度标签
+- ChromaDB 向量库支撑 RAG 问答
 
-## Key Technical Decisions
+## 核心技术决策
 
-### Zero-Dependency Prosody Engine
-The rhythm analysis engine (`分析系统/rhythm/`) implements Pingshui rhyme system (平水韵, 106 categories) entirely in Python stdlib — no NLP libraries, no external dictionaries. Pure algorithmic approach to tone pattern matching, rhyme detection, antithesis identification, and textual collation.
+### 零依赖格律引擎
+`分析系统/rhythm/` 目录下 17 个模块，纯 Python 标准库实现平水韵 106 韵部的平仄判断、押韵检测、对仗识别、文本校勘。不依赖任何 NLP 库、外部词典——完全是算法层面的实现。
 
-### Three-Phase Meta-Prompting (Poem Lab)
-Instead of hand-crafting prompts for each annotation task, the system uses an LLM to design the prompt:
-1. **Phase 1** — Parse natural language requirements into structured headers
-2. **Phase 2** — Auto-generate task-specific prompts + column mapping
-3. **Phase 3** — Quality validation trial run before batch execution
+### 三段式 Meta-Prompting（Poem Lab）
+不是手写 prompt，是让 LLM 自己设计 prompt：
+1. **阶段一** — 自然语言需求解析为结构化表头
+2. **阶段二** — 自动生成专用标注提示词 + 列映射
+3. **阶段三** — 质量校验试跑，通过后才启动批量执行
 
-### Agent Loop Architecture (TangCLI)
-Tool Registry (14 tools as OpenAI function-calling schemas) + Agent Loop (NL intent → LLM reasoning → tool selection → execution → result feedback). The pattern is reusable beyond poetry — the registry accepts any callable with a schema.
+### Agent Loop 架构（TangCLI）
+Tool Registry（14 个工具封装为 OpenAI function-calling schema）+ Agent Loop（自然语言意图 → LLM 推理 → 工具选择 → 执行 → 结果反馈）。模式可复用——注册表接受任何带 schema 的 callable。
 
-## Running Locally
+## 本地运行
 
-Each subsystem starts independently:
+各子系统独立启动：
 
 ```bash
-# Poetry Analysis System (port 5000)
+# 诗歌分析系统（端口 5000）
 cd 分析系统 && python app.py
 
-# Poem Lab (port 5000)
+# Poem Lab（端口 5000）
 cd 古典诗歌文本结构化标注生产系统3/poem_lab && python app.py
 
-# TangCLI Web Dashboard (port 5001)
+# TangCLI Web 控制台（端口 5001）
 cd clii/cli_ops/web && python app.py
 
-# TangCLI REPL
+# TangCLI REPL 模式
 python clii/cli_ops/cli_main.py
 ```
 
-**Requirements:** Python 3.10+, LM Studio (optional, for LLM features), `pip install flask chromadb` (see individual subsystem configs).
+**环境要求：** Python 3.10+，LM Studio（LLM 功能可选），`pip install flask chromadb`
 
-## License
+## 著作权
 
-Software copyrights filed for all three subsystems. Source code available for review.
+三个子系统均已申请软件著作权。源码开放查阅。
