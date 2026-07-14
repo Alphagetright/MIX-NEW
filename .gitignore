@@ -1,0 +1,31 @@
+# === 个人/隐私数据 ===
+.claude/memory/
+.claude/session.md
+.claude/pending-changes.jsonl
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+project_context_for_ai.txt
+
+# === 用户数据 / 数据库 ===
+**/users.json
+**/state.db
+分析系统/rag_db/
+
+# === 生成数据 / 导出 ===
+**/exports/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# === 无关目录 ===
+chapters/
+杂项/
+sample_pkts/
+
+# === IDE / 系统 ===
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+*.swp
+*.swo
