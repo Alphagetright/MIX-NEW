@@ -22,6 +22,26 @@ chapters/
 杂项/
 sample_pkts/
 
+# === Obsidian / Agent 技能冗余 ===
+.agents/
+.claude/skills/
+Obsidian-AI-*.pdf
+
+# === 嵌套 .claude ===
+clii/.claude/
+
+# === 日志文件 ===
+*.log
+clii/logs/
+
+# === 生成报告 / 构建产物 ===
+clii/reports/
+分析系统/Thesis_Dashboard.html
+分析系统/dufu_all_poems.json
+分析系统/scripts/build_*.py
+分析系统/scripts/pack_*.py
+分析系统/*报告*.html
+
 # === IDE / 系统 ===
 .vscode/
 .idea/
