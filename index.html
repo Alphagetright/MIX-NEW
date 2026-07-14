@@ -296,47 +296,46 @@
       <!-- 项目4 -->
       <div class="project-card">
         <div class="card-body">
-          <h3>change-log — Agent 认知基础设施</h3>
-          <p class="project-role">双轨迭代引擎 + 跨会话认知传递 + 跨平台方法论</p>
-          <div class="role-badge"><span class="dot"></span> Role: System Designer — 双轨迭代模型设计、Hook 自动化实现、认知复利机制设计、Skill 插件市场搭建</div>
+          <h3>change-log — Agent 工作流自动化</h3>
+          <p class="project-role">Hook 自动捕获变更 + 跨会话上下文恢复 + Skill 插件市场</p>
+          <div class="role-badge"><span class="dot"></span> Role: System Designer — Hook 自动化设计、变更追踪系统实现、Skill 插件市场搭建</div>
           <p class="project-desc">
-            Agent 时代的核心问题不是"单次回答质量"，而是"第 N+1 次对话的起跑线能不能站在第 N 次的前面"。change-log 解决的就是这件事——不是工具，是<strong>可迁移到任意 Agent 工作流的方法论</strong>。PostToolUse Hook 自动捕获每次代码变更 → 智能过滤 → 双轨写入（代码轨 CHANGELOG.md + 思考轨 thoughts.md）→ 会话结束生成 session.md 交接快照 → 新会话自动装载，无缝上下文恢复。纯 markdown 持久化，不依赖任何专有格式，可迁移到 CodeBuddy / Codex / 任何未来的 Agent 平台。
+            解决 Agent 协作中的一个实际问题：每次新会话都要重新解释项目背景、重复对齐上下文，高频改动下知识无法积累。change-log 用 PostToolUse Hook 自动捕获每次代码变更，分别写入 CHANGELOG.md（做了什么）和 thoughts.md（为什么这样做），会话结束生成 session.md 交接快照，下次会话自动装载——新 AI 上来就知道项目现状和上次做到哪了。纯 markdown 实现，不绑平台，可迁移到任何支持 hook 的 Agent 工作流。
           </p>
           <div class="workflow">
             <span class="step">代码变更</span><span class="arrow-wf">→</span>
-            <span class="step">PostToolUse Hook 捕获</span><span class="arrow-wf">→</span>
+            <span class="step">Hook 自动捕获</span><span class="arrow-wf">→</span>
             <span class="step">智能过滤去重</span><span class="arrow-wf">→</span>
-            <span class="step">CHANGELOG.md（what）</span><span class="arrow-wf">⇄</span>
-            <span class="step">thoughts.md（why）</span><span class="arrow-wf">→</span>
+            <span class="step">CHANGELOG.md（做了什么）</span><span class="arrow-wf">+</span>
+            <span class="step">thoughts.md（为什么）</span><span class="arrow-wf">→</span>
             <span class="step">session.md 交接</span><span class="arrow-wf">→</span>
-            <span class="step">下个 AI 自动装载</span>
+            <span class="step">下次会话自动装载</span>
           </div>
           <div class="project-stack">
-            <span>Agent Hooks</span><span>Markdown</span><span>PowerShell</span><span>JSONL</span><span>YAML</span><span>插件系统</span><span>工作流设计</span><span>跨平台</span>
+            <span>Agent Hooks</span><span>Markdown</span><span>PowerShell</span><span>JSONL</span><span>YAML</span><span>插件系统</span><span>工作流设计</span>
           </div>
           <ul class="results-list">
-            <li>双轨迭代引擎：代码轨存 what（CHANGELOG.md）+ 思考轨存 why（thoughts.md），两条线并行，指数复利</li>
-            <li>跨会话认知传递：thoughts.md 末尾嵌入"下一步 AI 提示词"，新 AI 装载即对频，无需重新解释上下文</li>
-            <li>耦合影响地图：🔴🟡🟢 三级风险评估 + 8 项改动前自检清单，覆盖 3 子系统交叉依赖</li>
-            <li>平台无关设计：纯 markdown 持久化，不绑定任何 Agent 平台，可迁移到 Codex / Cursor / 未来工具</li>
+            <li>Hook 自动记录每次代码变更，智能过滤格式化/注释等微小改动，去重合并后写入可读日志</li>
+            <li>新会话启动时自动装载 session.md + thoughts.md，无需重新解释项目背景和当前进度</li>
+            <li>耦合影响地图覆盖 3 个子系统：🔴 高温点（>3 模块依赖）改动前强制确认，🟡🟢分级提醒</li>
+            <li>纯 markdown 保持可读可迁移，不依赖任何专有格式，可复用到 Codex / Cursor 等任意 Agent 工作流</li>
           </ul>
           <div class="project-metrics">
-            <span><strong>双轨</strong> 迭代引擎</span>
-            <span><strong>5</strong> 条战略思考链</span>
+            <span><strong>5</strong> 个自动化 Hook</span>
             <span><strong>9</strong> 个自定义 Skill（3 插件组）</span>
-            <span><strong>3 层</strong> 耦合影响地图</span>
-            <span><strong>跨平台</strong> 纯 markdown 持久化</span>
+            <span><strong>3 子系统</strong> 耦合影响地图</span>
+            <span><strong>跨平台</strong> 纯 markdown 实现</span>
           </div>
           <div style="margin-top: 16px;">
             <div class="code-snippet">
-<span class="comment"># 认知复利引擎 —— 每次对话在上一次基础上螺旋上升</span>
-<span class="key">改动前</span>   → <span class="key">预读 CHANGELOG（近3天）</span> + <span class="key">coupling.md（影响检查）</span> + <span class="key">thoughts.md（上下文注入）</span>
+<span class="comment"># 每次改代码自动触发，下次会话自动恢复上下文</span>
+<span class="key">改动前</span>   → <span class="key">预读最近 3 天 CHANGELOG</span> + <span class="key">coupling.md 影响检查</span> + <span class="key">thoughts.md 加载上下文</span>
 <span class="key">改动中</span>   → <span class="key">PostToolUse hook</span> → <span class="str">pending-changes.jsonl</span>
-<span class="key">改动后</span>   → <span class="key">Phase 1</span>: <span class="str">CHANGELOG.md</span> <span class="comment">（智能过滤+去重合并）</span>
-             <span class="key">Phase 2</span>: <span class="str">memory/modules/*.md</span> <span class="comment">（stale 标记+影响检查）</span>
-             <span class="key">Phase 4</span>: <span class="str">thoughts.md</span> <span class="comment">（"这次思考会不会让下次对话不一样？"）</span>
-<span class="key">结束</span>     → <span class="key">Stop hook</span> → <span class="str">session.md</span> <span class="comment">（进度+决策+阻塞+下一步）</span>
-<span class="key">启动</span>     → <span class="key">launcher</span> → <span class="str">session.md + thoughts.md</span> → <span class="arrow">认知复利装载完成</span>
+<span class="key">改动后</span>   → <span class="key">Step 1</span>: <span class="str">CHANGELOG.md</span> <span class="comment">（智能过滤 + 去重合并）</span>
+             <span class="key">Step 2</span>: <span class="str">memory/modules/*.md</span> <span class="comment">（标记过期模块）</span>
+             <span class="key">Step 3</span>: <span class="str">thoughts.md</span> <span class="comment">（决策有保存价值才记录，不什么都存）</span>
+<span class="key">结束</span>     → <span class="key">Stop hook</span> → <span class="str">session.md</span> <span class="comment">（进度 + 决策 + 阻塞 + 下一步）</span>
+<span class="key">启动</span>     → <span class="key">launcher</span> → <span class="str">session.md + thoughts.md</span> → <span class="arrow">上下文已恢复，直接开始工作</span>
             </div>
           </div>
         </div>
@@ -392,10 +391,9 @@
     <div class="section-title">我是谁</div>
     <div class="about-text">
       <p>计算机专业本科在读。方向：<strong>AI 应用开发</strong>。可实习。</p>
-      <p style="margin-top:12px;"><strong>工程能力：</strong>独立完成系统架构设计 → 数据处理管道 → LLM 推理集成 → Web 应用交付的全链路闭环。上述四个项目均为独立开发，涵盖架构设计、核心模块编码、Prompt 设计、数据库设计、部署打包。</p>
-      <p style="margin-top:12px;"><strong>数据量级：</strong>1,336 首杜甫诗 + 313 首全唐诗结构化处理，12,738 个分析单元，4,896 条意象标注，11MB+ 主数据集 + 50MB 逐首分析 JSON，ChromaDB 向量库支撑 RAG 语义检索。百万级文本数据处理经验。</p>
-      <p style="margin-top:12px;"><strong>技术深度：</strong>格律引擎 17 模块纯标准库实现（平水韵 106 韵部，零外部依赖），三段式 Meta-Prompting（LLM 自主设计标注 Schema），Agent Loop + Tool Registry 架构（14 工具 function-calling 编排）。不依赖第三方框架核心逻辑。</p>
-      <p style="margin-top:12px;">三个系统已申请软件著作权。自建 change-log 双轨迭代系统——不是一次性工具，是可迁移到 CodeBuddy / Codex / 未来 Agent 平台的方法论。认知复利引擎确保每次对话站在前一次的肩膀上，单人产出效率拉至团队级别。</p>
+      <p style="margin-top:12px;"><strong>我能做什么：</strong>独立走通系统架构设计 → 数据处理管道 → LLM 推理集成 → Web 应用交付的全链路。上面四个项目均为独立开发，从零到上线一人完成。</p>
+      <p style="margin-top:12px;"><strong>技术偏好：</strong>倾向用标准库和基础依赖解决核心问题，避免引入重型框架。格律引擎 17 模块纯标准库覆盖平水韵 106 韵部、Meta-Prompting 三段式让 LLM 自己设计标注 Schema、Agent Loop + Tool Registry 实现自然语言驱动 CLI——核心逻辑不依赖第三方。</p>
+      <p style="margin-top:12px;">三个系统已申请软件著作权。change-log 系统解决了我自己"每次新会话都要重复解释项目背景"的痛点——hook 自动捕获变更 + markdown 持久化 + 下次会话自动装载，可迁移到任何 Agent 工作流。</p>
     </div>
   </div>
 </section>
