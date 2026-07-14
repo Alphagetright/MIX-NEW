@@ -78,6 +78,31 @@
   .code-snippet .arrow { color: #818cf8; }
   .code-snippet .comment { color: #52525b; }
 
+  .workflow {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    padding: 14px 18px; background: #0a0a0b; border: 1px solid #1f1f23;
+    border-radius: 8px; font-size: 12px; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #a1a1aa; margin-bottom: 16px; overflow-x: auto;
+  }
+  .workflow .step {
+    padding: 4px 10px; border-radius: 4px; white-space: nowrap;
+    background: #18181b; color: #d4d4d8; border: 1px solid #27272a;
+  }
+  .workflow .arrow-wf { color: #818cf8; font-weight: 700; margin: 0 2px; }
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    background: rgba(129,140,248,0.1); color: #a5b4fc; border: 1px solid rgba(129,140,248,0.2);
+    margin-bottom: 16px;
+  }
+  .role-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #818cf8; }
+  .results-list { list-style: none; padding: 0; margin: 0 0 16px 0; }
+  .results-list li {
+    font-size: 13px; color: #71717a; padding: 3px 0 3px 18px;
+    position: relative;
+  }
+  .results-list li::before { content: '—'; position: absolute; left: 0; color: #52525b; }
+
   .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
   .skill-cat { border: 1px solid #1f1f23; border-radius: 10px; padding: 24px; background: #0d0d10; }
   .skill-cat h4 { font-size: 14px; font-weight: 600; color: #818cf8; margin-bottom: 12px; }
@@ -121,20 +146,21 @@
 <section class="hero">
   <div class="container">
     <h1>SMITH FLASH</h1>
-    <p class="subtitle">LLM 应用开发 — 从数据管道到 LLM 推理到应用交付，全链路独立闭环。</p>
+    <p class="subtitle">AI Application Developer — 独立完成从数据管道、LLM 推理到应用交付的全链路系统构建。</p>
     <div class="tags">
-      <span class="tag">Python</span>
-      <span class="tag">LLM</span>
-      <span class="tag">RAG</span>
-      <span class="tag">Agent</span>
+      <span class="tag">LLM Application</span>
+      <span class="tag">RAG Pipeline</span>
+      <span class="tag">Agent Workflow</span>
       <span class="tag">Prompt Engineering</span>
-      <span class="tag">Pipeline</span>
+      <span class="tag">Python</span>
       <span class="tag">Flask</span>
       <span class="tag">SQLite</span>
-      <span class="tag">数据处理</span>
+      <span class="tag">Pipeline Automation</span>
     </div>
     <div class="links-row">
       <a href="https://github.com/Alphagetright/MIX-NEW" target="_blank">GitHub →</a>
+      <span style="color:#52525b;">|</span>
+      <span style="color:#71717a;">在校 · 可实习 · 独立交付</span>
     </div>
   </div>
 </section>
@@ -152,12 +178,28 @@
         <div class="card-body">
           <h3>古典诗歌意象分析系统</h3>
           <p class="project-role">全栈 Web 应用 + RAG 检索 + 格律分析引擎</p>
+          <div class="role-badge"><span class="dot"></span> Role: Independent Developer — 系统架构设计、Pipeline 链式编排、全栈开发、格律引擎实现</div>
           <p class="project-desc">
             从原始诗歌文本到交互式可视化看板的完整系统。Pipeline 链式编排：文本解析 → 格律校验（平仄/押韵/对仗）→ 意象提取 → ChromaDB 向量嵌入 → RAG 问答。Flask 后端 + ECharts 前端，支持 LLM 自然语言查询诗歌数据。格律引擎 17 个模块纯标准库实现，覆盖平水韵 106 韵部，零外部依赖。
           </p>
+          <div class="workflow">
+            <span class="step">原始诗歌文本</span><span class="arrow-wf">→</span>
+            <span class="step">Pipeline 解析</span><span class="arrow-wf">→</span>
+            <span class="step">格律校验</span><span class="arrow-wf">→</span>
+            <span class="step">意象提取</span><span class="arrow-wf">→</span>
+            <span class="step">ChromaDB 向量嵌入</span><span class="arrow-wf">→</span>
+            <span class="step">RAG 问答</span><span class="arrow-wf">→</span>
+            <span class="step">ECharts 可视化</span>
+          </div>
           <div class="project-stack">
             <span>Python</span><span>Flask</span><span>ChromaDB</span><span>RAG</span><span>ECharts</span><span>Jinja2</span><span>LM Studio</span>
           </div>
+          <ul class="results-list">
+            <li>处理 1,336 首杜甫诗 + 313 首全唐诗，产出 12,738 个分析单元、4,896 条意象标注</li>
+            <li>格律引擎 17 模块纯标准库实现平水韵 106 韵部，零 NLP 库依赖</li>
+            <li>全链路闭环：数据清洗 → LLM 推理 → 向量检索 → 可视化交付</li>
+            <li>软件著作权已申请</li>
+          </ul>
           <div class="project-metrics">
             <span><strong>1,336</strong> 首杜甫诗逐一分析</span>
             <span><strong>12,738</strong> 个分析单元</span>
@@ -176,12 +218,27 @@
         <div class="card-body">
           <h3>Poem Lab — LLM 自动化标注引擎</h3>
           <p class="project-role">三段式 Meta-Prompting + 并行批处理 + 断点续传</p>
+          <div class="role-badge"><span class="dot"></span> Role: Independent Developer — 架构设计、Meta-Prompting 流程设计、并行调度实现、质量评分体系设计</div>
           <p class="project-desc">
             用户用自然语言描述标注需求，系统自动设计 Schema、生成专用提示词、并行调用 LLM 批量产出结构化数据。核心创新：三段式 meta-prompting（需求解析 → Schema 设计 → 质量校验），不是手写 prompt，是让 LLM 自己设计 prompt。支持 ThreadPoolExecutor 并行、checkpoint 断点续传、SSE 流式推送进度、三维质量评分（完整性/合规性/一致性）。
           </p>
+          <div class="workflow">
+            <span class="step">自然语言需求</span><span class="arrow-wf">→</span>
+            <span class="step">Phase 1: 需求解析</span><span class="arrow-wf">→</span>
+            <span class="step">Phase 2: Schema 设计</span><span class="arrow-wf">→</span>
+            <span class="step">Phase 3: 质量校验</span><span class="arrow-wf">→</span>
+            <span class="step">并行 LLM 调用</span><span class="arrow-wf">→</span>
+            <span class="step">结构化输出 + 评分</span>
+          </div>
           <div class="project-stack">
             <span>Python</span><span>Flask</span><span>SQLite</span><span>ThreadPoolExecutor</span><span>SSE</span><span>Meta-Prompting</span><span>LM Studio</span>
           </div>
+          <ul class="results-list">
+            <li>三段式 Meta-Prompting 实现标注需求→Schema→提示词全自动生成，无需手写 prompt</li>
+            <li>5 并发 ThreadPoolExecutor 批处理，checkpoint 断点续传保障长任务可靠性</li>
+            <li>三维质量评分体系（完整性 / 合规性 / 一致性）+ SSE 实时进度反馈</li>
+            <li>55 个 API 路由 + 12 套标注模板，SQLite 持久化全流程数据</li>
+          </ul>
           <div class="project-metrics">
             <span><strong>55</strong> 个 API 路由</span>
             <span><strong>3 段</strong> meta-prompting 流水线</span>
@@ -201,12 +258,27 @@
         <div class="card-body">
           <h3>TangCLI — Agent 驱动运维工具</h3>
           <p class="project-role">CLI + Agent Loop + Tool Registry + Web 控制台</p>
+          <div class="role-badge"><span class="dot"></span> Role: Independent Developer — Agent Loop 架构设计、Tool Registry 实现、CLI 交互设计、PyInstaller 打包</div>
           <p class="project-desc">
             自然语言驱动的数据运维命令行工具。核心架构：Agent Loop（用户意图 → LLM 推理 → function-calling 工具选择 → 执行 → 结果反馈）+ Tool Registry（14 个工具封装为 OpenAI function-calling schema）。15 个子命令，交互式 REPL 模式，Flask Web 控制台远程管理。PyInstaller 打包为独立 EXE，拿到一台新电脑直接跑。
           </p>
+          <div class="workflow">
+            <span class="step">自然语言输入</span><span class="arrow-wf">→</span>
+            <span class="step">LLM 推理</span><span class="arrow-wf">→</span>
+            <span class="step">Function Calling</span><span class="arrow-wf">→</span>
+            <span class="step">Tool Registry 匹配</span><span class="arrow-wf">→</span>
+            <span class="step">工具执行</span><span class="arrow-wf">→</span>
+            <span class="step">结果反馈</span>
+          </div>
           <div class="project-stack">
             <span>Python</span><span>Agent Loop</span><span>Function Calling</span><span>Tool Registry</span><span>REPL</span><span>PyInstaller</span><span>Flask</span>
           </div>
+          <ul class="results-list">
+            <li>Agent Loop 架构：自然语言 → LLM → 工具调用 → 执行，完整 Agent 自主决策闭环</li>
+            <li>14 个工具封装为 OpenAI function-calling schema，可扩展注册表设计</li>
+            <li>15 子命令 + 交互式 REPL + Flask Web 控制台，三层访问模式</li>
+            <li>PyInstaller 打包为独立 EXE，零环境依赖分发</li>
+          </ul>
           <div class="project-metrics">
             <span><strong>28</strong> 个模块</span>
             <span><strong>15</strong> 个子命令</span>
@@ -225,12 +297,27 @@
         <div class="card-body">
           <h3>AI 辅助开发工作流引擎</h3>
           <p class="project-role">Agent 记忆系统 + 变更追踪 + Skill 编排</p>
+          <div class="role-badge"><span class="dot"></span> Role: Independent Developer — Hook 系统设计、双轨迭代模型设计、Skill 插件市场搭建、工作流自动化</div>
           <p class="project-desc">
             基于 LLM Agent 基础设施构建的元工具。Hook 自动捕获每次代码变更，跨会话持久化项目知识，维护双轨迭代日志（代码变更 + 战略思考）。9 个自定义 Skill 标准化打包为插件市场。把 AI 从一次性对话工具变成持续积累的开发伙伴——每次对话都在上一次的基础上进化，不是每次都从零开始。
           </p>
+          <div class="workflow">
+            <span class="step">代码变更</span><span class="arrow-wf">→</span>
+            <span class="step">PostToolUse Hook</span><span class="arrow-wf">→</span>
+            <span class="step">pending-changes.jsonl</span><span class="arrow-wf">→</span>
+            <span class="step">change-log 处理</span><span class="arrow-wf">→</span>
+            <span class="step">CHANGELOG.md + thoughts.md</span><span class="arrow-wf">→</span>
+            <span class="step">session.md 交接</span>
+          </div>
           <div class="project-stack">
             <span>Agent SDK</span><span>Hooks</span><span>JSONL</span><span>YAML</span><span>插件系统</span><span>工作流设计</span>
           </div>
+          <ul class="results-list">
+            <li>5 个 Hook 触发器实现代码变更自动捕获、会话结束自动交接、新会话无缝恢复</li>
+            <li>双轨迭代模型：CHANGELOG.md 存 what + thoughts.md 存 why，持续复利积累</li>
+            <li>9 个自定义 Skill 标准化打包为 3 个插件组，可复用、可分发的独立模块</li>
+            <li>项目记忆系统覆盖 3 个子系统全量代码分析，自动 stale 检测标记过期模块</li>
+          </ul>
           <div class="project-metrics">
             <span><strong>5</strong> 个 Hook 自动化触发</span>
             <span><strong>9</strong> 个自定义 Skill（3 插件组）</span>
@@ -299,9 +386,10 @@
     <div class="section-label">关于</div>
     <div class="section-title">我是谁</div>
     <div class="about-text">
-      <p>计算机专业本科在读。方向：<strong>LLM 应用开发</strong>。</p>
-      <p style="margin-top:12px;"><strong>数据量级：</strong>1,336 首杜甫诗 + 313 首全唐诗结构化处理，12,738 个分析单元，4,896 条意象标注，11MB+ 主数据集 + 50MB 逐首分析 JSON，ChromaDB 向量库支撑 RAG 语义检索。</p>
-      <p style="margin-top:12px;"><strong>技术深度：</strong>格律引擎 17 模块纯标准库实现（平水韵 106 韵部，零外部依赖），三段式 Meta-Prompting（LLM 自主设计标注 Schema），Agent Loop + Tool Registry 架构（14 工具 function-calling 编排）。全链路闭环，不依赖第三方框架核心逻辑。</p>
+      <p>计算机专业本科在读。方向：<strong>AI 应用开发</strong>。可实习。</p>
+      <p style="margin-top:12px;"><strong>工程能力：</strong>独立完成系统架构设计 → 数据处理管道 → LLM 推理集成 → Web 应用交付的全链路闭环。上述四个项目均为独立开发，涵盖架构设计、核心模块编码、Prompt 设计、数据库设计、部署打包。</p>
+      <p style="margin-top:12px;"><strong>数据量级：</strong>1,336 首杜甫诗 + 313 首全唐诗结构化处理，12,738 个分析单元，4,896 条意象标注，11MB+ 主数据集 + 50MB 逐首分析 JSON，ChromaDB 向量库支撑 RAG 语义检索。百万级文本数据处理经验。</p>
+      <p style="margin-top:12px;"><strong>技术深度：</strong>格律引擎 17 模块纯标准库实现（平水韵 106 韵部，零外部依赖），三段式 Meta-Prompting（LLM 自主设计标注 Schema），Agent Loop + Tool Registry 架构（14 工具 function-calling 编排）。不依赖第三方框架核心逻辑。</p>
       <p style="margin-top:12px;">三个系统已申请软件著作权。自建 AI 辅助开发工作流（双轨迭代 + Hook 自动化 + 9 插件 Skill 市场），单人产出效率拉至团队级别。</p>
     </div>
   </div>
