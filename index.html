@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smith Flash — LLM Application Developer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #09090b;
+    color: #e4e4e7;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #818cf8; text-decoration: none; }
+  a:hover { color: #a5b4fc; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(9,9,11,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1f1f23;
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  nav .logo { font-weight: 600; font-size: 15px; color: #fafafa; }
+  nav .links { display: flex; gap: 24px; font-size: 14px; }
+  nav .links a { color: #a1a1aa; }
+  nav .links a:hover { color: #fafafa; }
+
+  /* Sections */
+  section { padding: 80px 0; }
+
+  /* Hero */
+  .hero { padding: 140px 0 80px; }
+  .hero h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; color: #fafafa; line-height: 1.1; }
+  .hero .subtitle { font-size: 20px; color: #a1a1aa; margin-top: 16px; max-width: 600px; }
+  .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .hero .tag {
+    padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    background: #18181b; color: #a5b4fc; border: 1px solid #27272a;
+  }
+  .hero .links-row { display: flex; gap: 16px; margin-top: 28px; font-size: 14px; }
+
+  /* Section titles */
+  .section-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #818cf8; margin-bottom: 8px; }
+  .section-title { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: #fafafa; margin-bottom: 40px; }
+
+  /* Project cards */
+  .projects-grid { display: flex; flex-direction: column; gap: 32px; }
+  .project-card {
+    border: 1px solid #1f1f23; border-radius: 12px; background: #0d0d10;
+    overflow: hidden; transition: border-color 0.2s;
+  }
+  .project-card:hover { border-color: #333; }
+  .project-card .card-body { padding: 32px; }
+  .project-card .card-body h3 { font-size: 22px; font-weight: 700; color: #fafafa; margin-bottom: 6px; }
+  .project-card .card-body .project-role { font-size: 14px; color: #818cf8; margin-bottom: 14px; font-weight: 500; }
+  .project-card .card-body .project-desc { font-size: 15px; color: #a1a1aa; margin-bottom: 16px; line-height: 1.7; max-width: 680px; }
+  .project-card .card-body .project-stack { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .project-card .card-body .project-stack span {
+    padding: 3px 10px; border-radius: 4px; font-size: 12px;
+    background: #18181b; color: #d4d4d8; border: 1px solid #27272a;
+  }
+  .project-card .card-body .project-metrics { font-size: 13px; color: #71717a; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .project-card .card-body .project-metrics strong { color: #d4d4d8; }
+
+  .project-card .card-media { border-top: 1px solid #1f1f23; background: #060608; overflow: hidden; }
+  .project-card .card-media img { width: 100%; display: block; object-fit: cover; max-height: 480px; }
+  .project-card .card-media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: #1f1f23; }
+  .project-card .card-media-grid img { width: 100%; display: block; object-fit: cover; aspect-ratio: 16/10; }
+
+  /* Code block for project 4 */
+  .code-snippet {
+    background: #0a0a0b; border: 1px solid #1f1f23; border-radius: 8px;
+    padding: 20px 24px; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px; line-height: 1.7; color: #a1a1aa; overflow-x: auto;
+  }
+  .code-snippet .key { color: #c084fc; }
+  .code-snippet .str { color: #4ade80; }
+  .code-snippet .arrow { color: #818cf8; }
+  .code-snippet .comment { color: #52525b; }
+
+  /* Skills */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .skill-cat { border: 1px solid #1f1f23; border-radius: 10px; padding: 24px; background: #0d0d10; }
+  .skill-cat h4 { font-size: 14px; font-weight: 600; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .skill-cat .skill-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .skill-cat .skill-list span {
+    padding: 4px 10px; border-radius: 4px; font-size: 13px;
+    background: #18181b; color: #d4d4d8;
+  }
+
+  /* About */
+  .about-text { font-size: 16px; color: #a1a1aa; max-width: 640px; line-height: 1.8; }
+  .about-text strong { color: #e4e4e7; }
+
+  /* Footer */
+  footer { border-top: 1px solid #1f1f23; padding: 32px 0; }
+  footer .container { display: flex; justify-content: space-between; font-size: 13px; color: #52525b; }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    .hero .subtitle { font-size: 16px; }
+    .section-title { font-size: 24px; }
+    section { padding: 48px 0; }
+    .hero { padding: 100px 0 48px; }
+    .project-card .card-body { padding: 20px; }
+    .project-card .card-media img { max-height: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <span class="logo">SF</span>
+    <div class="links">
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#about">About</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>Smith Flash</h1>
+    <p class="subtitle">LLM Application Developer — building production pipelines from data ingestion to LLM inference to user-facing applications.</p>
+    <div class="tags">
+      <span class="tag">Python</span>
+      <span class="tag">LLM</span>
+      <span class="tag">RAG</span>
+      <span class="tag">Agent</span>
+      <span class="tag">Prompt Engineering</span>
+      <span class="tag">Pipeline</span>
+      <span class="tag">Flask</span>
+      <span class="tag">SQLite</span>
+      <span class="tag">Data Processing</span>
+    </div>
+    <div class="links-row">
+      <a href="https://github.com/Alphagetright/MIX-NEW" target="_blank">GitHub →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Projects -->
+<section id="projects">
+  <div class="container">
+    <div class="section-label">Projects</div>
+    <div class="section-title">What I've Built</div>
+
+    <div class="projects-grid">
+
+      <!-- Project 1: Poetry Analysis System -->
+      <div class="project-card">
+        <div class="card-body">
+          <h3>Classical Poetry Imagery Analysis System</h3>
+          <p class="project-role">Full-Stack Web App + RAG Pipeline + Prosody Engine</p>
+          <p class="project-desc">
+            An end-to-end system that ingests raw classical Chinese poetry text, runs it through a chained analysis pipeline (parsing → prosody checking → imagery extraction → vector embedding), and surfaces results in an interactive Flask dashboard with ECharts visualization and LLM-powered Q&amp;A.
+          </p>
+          <div class="project-stack">
+            <span>Python</span><span>Flask</span><span>ChromaDB</span><span>RAG</span><span>ECharts</span><span>Jinja2</span><span>LM Studio</span>
+          </div>
+          <div class="project-metrics">
+            <span><strong>1,336</strong> poems analyzed</span>
+            <span><strong>12,738</strong> analysis units</span>
+            <span><strong>4,896</strong> imagery items</span>
+            <span><strong>106</strong> rhyme categories (zero-dependency engine)</span>
+            <span><strong>17</strong> prosody modules, stdlib only</span>
+          </div>
+        </div>
+        <div class="card-media">
+          <img src="分析系统/assets/webapp/3_dashboard.png" alt="Dashboard" loading="lazy">
+        </div>
+      </div>
+
+      <!-- Project 2: Poem Lab -->
+      <div class="project-card">
+        <div class="card-body">
+          <h3>Poem Lab — LLM Annotation Engine</h3>
+          <p class="project-role">Three-Phase Meta-Prompting Pipeline + Batch Processing</p>
+          <p class="project-desc">
+            A production-grade annotation system that takes natural language requirements, auto-designs a labeling schema, generates specialized prompts, and coordinates parallel LLM calls to produce structured outputs. Features checkpoint/resume, quality scoring, and SSE-based progress streaming.
+          </p>
+          <div class="project-stack">
+            <span>Python</span><span>Flask</span><span>SQLite</span><span>ThreadPoolExecutor</span><span>SSE</span><span>Meta-Prompting</span><span>LM Studio</span>
+          </div>
+          <div class="project-metrics">
+            <span><strong>55</strong> API routes</span>
+            <span><strong>3-phase</strong> meta-prompting pipeline</span>
+            <span><strong>12</strong> annotation prompt templates</span>
+            <span><strong>5-worker</strong> parallel batch executor</span>
+            <span><strong>Checkpoint</strong> resume support</span>
+          </div>
+        </div>
+        <div class="card-media-grid">
+          <img src="分析系统/assets/webapp/8_ai.png" alt="AI Interface" loading="lazy">
+          <img src="分析系统/assets/stats_viz/01_dashboard.png" alt="Stats Dashboard" loading="lazy">
+        </div>
+      </div>
+
+      <!-- Project 3: TangCLI -->
+      <div class="project-card">
+        <div class="card-body">
+          <h3>TangCLI — Agent-Driven Operations Toolkit</h3>
+          <p class="project-role">CLI + Agent Loop + Tool Registry + Web Dashboard</p>
+          <p class="project-desc">
+            A natural-language-driven CLI for managing poetry data operations. Uses an Agent Loop pattern: user intent → LLM reasoning → function-calling tool selection → execution. Includes 15 subcommands, an interactive REPL mode, and a Flask-based web dashboard for remote monitoring. Packaged as a standalone executable via PyInstaller.
+          </p>
+          <div class="project-stack">
+            <span>Python</span><span>Agent Loop</span><span>Function Calling</span><span>Tool Registry</span><span>REPL</span><span>PyInstaller</span><span>Flask</span>
+          </div>
+          <div class="project-metrics">
+            <span><strong>28</strong> modules</span>
+            <span><strong>15</strong> subcommands</span>
+            <span><strong>14</strong> registered tools</span>
+            <span><strong>3-tier</strong> architecture (infra / orchestration / business)</span>
+          </div>
+        </div>
+        <div class="card-media-grid">
+          <img src="分析系统/assets/cli_ops/01_help.png" alt="CLI Help" loading="lazy">
+          <img src="分析系统/assets/cli_ops/04_health.png" alt="Health Check" loading="lazy">
+        </div>
+      </div>
+
+      <!-- Project 4: AI Dev Workflow Engine -->
+      <div class="project-card">
+        <div class="card-body">
+          <h3>AI-Assisted Development Workflow Engine</h3>
+          <p class="project-role">Agent Memory System + Change Tracking + Skill Orchestration</p>
+          <p class="project-desc">
+            A meta-tool built on LLM Agent infrastructure that captures every code change, persists project knowledge across sessions, and maintains a dual-track iteration log (code changes + strategic thinking). Includes 9 custom skills packaged as a standardized plugin marketplace — transforming the AI from a one-shot tool into a continuously accumulating development partner.
+          </p>
+          <div class="project-stack">
+            <span>Agent SDK</span><span>Hooks</span><span>JSONL</span><span>YAML</span><span>Plugin System</span><span>Workflow Design</span>
+          </div>
+          <div class="project-metrics">
+            <span><strong>5</strong> hook-triggered automations</span>
+            <span><strong>9</strong> custom skills (3 plugin groups)</span>
+            <span><strong>Dual-track</strong> iteration log</span>
+            <span><strong>Auto</strong> stale detection</span>
+          </div>
+          <div style="margin-top: 16px;">
+            <div class="code-snippet">
+<span class="comment"># The engine's core loop</span>
+<span class="key">code change</span> → <span class="key">PostToolUse hook</span> → <span class="str">pending-changes.jsonl</span>
+                                      → <span class="key">change-log</span> → <span class="str">CHANGELOG.md</span> <span class="comment">(what)</span>
+                                      → <span class="key">change-log</span> → <span class="str">thoughts.md</span>    <span class="comment">(why)</span>
+<span class="key">session end</span> → <span class="key">Stop hook</span> → <span class="str">session.md</span> <span class="comment">(handoff snapshot)</span>
+<span class="key">new session</span> → <span class="key">launcher</span> → <span class="str">session.md</span> + <span class="str">overview.md</span> → <span class="arrow">seamless context restore</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <div class="container">
+    <div class="section-label">Skills</div>
+    <div class="section-title">Technical Competencies</div>
+    <div class="skills-grid">
+
+      <div class="skill-cat">
+        <h4>AI Application</h4>
+        <div class="skill-list">
+          <span>LLM API Integration</span><span>Prompt Engineering</span><span>RAG Pipeline</span>
+          <span>Embedding & Vector DB</span><span>Agent Workflow Design</span>
+          <span>Function Calling / Tool Use</span><span>Meta-Prompting</span>
+          <span>SSE Streaming</span><span>Local LLM Deployment</span>
+        </div>
+      </div>
+
+      <div class="skill-cat">
+        <h4>Backend & Systems</h4>
+        <div class="skill-list">
+          <span>Python</span><span>Flask</span><span>SQLite</span><span>REST API Design</span>
+          <span>CLI Development</span><span>PyInstaller Packaging</span>
+          <span>Multi-threading</span><span>Hook Systems</span>
+        </div>
+      </div>
+
+      <div class="skill-cat">
+        <h4>Data & Pipeline</h4>
+        <div class="skill-list">
+          <span>JSON / CSV / XML</span><span>Text Cleaning</span><span>ETL Pipeline</span>
+          <span>Data Validation</span><span>Batch Processing</span>
+          <span>Checkpoint / Resume</span><span>Encoding Detection</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about">
+  <div class="container">
+    <div class="section-label">About</div>
+    <div class="section-title">Who I Am</div>
+    <div class="about-text">
+      <p>Computer Science undergraduate. Focused on <strong>LLM application development</strong> — turning raw data and natural language requirements into working, deployed systems.</p>
+      <p style="margin-top:12px;">I go from <strong>requirement analysis → data pipeline → LLM integration → application delivery</strong> independently. Not limited to any single layer of the stack.</p>
+      <p style="margin-top:12px;">Three software copyrights filed. All systems shown above are built, running, and iterated on continuously.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <span>Smith Flash · LLM Application Developer</span>
+    <span><a href="https://github.com/Alphagetright/MIX-NEW">GitHub</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
